@@ -26,10 +26,6 @@ sector_sum  = get_sector_summary(tags_df)
 
 
 def get_country_data_json():
-    """
-    Builds a JSON-serialisable dict of all country data.
-    Served to D3 globe via /country-data endpoint.
-    """
     data = {}
     for _, row in map_df.iterrows():
         iso = row.get("iso_code")
@@ -56,47 +52,79 @@ def get_country_data_json():
 
 def kpi_strip():
     items = [
-        ("NDC Countries",       str(kpis["total_countries"]),       C["emerald"]),
-        ("Conditional Signals", str(kpis["conditional_countries"]), C["crimson"]),
-        ("Avg ND-GAIN",         str(kpis["avg_ndgain"]),            C["amber"]),
-        ("WB Projects",         str(kpis["total_projects"]),        C["cobalt"]),
-        ("Established",         str(kpis["tier1_count"]),           C["tier1"]),
-        ("Emerging",            str(kpis["tier2_count"]),           C["tier2"]),
-        ("Frontier",            str(kpis["tier3_count"]),           C["tier3"]),
-        ("Avg Renewables",      f"{kpis['avg_renewable']}%",        C["nature"]),
+        ("NDC Countries",       str(kpis["total_countries"]),
+         C["emerald"],
+         "198 countries plus the EU collective submission"),
+        ("Conditional Signals", str(kpis["conditional_countries"]),
+         C["crimson"],
+         "Countries requiring external finance to meet targets"),
+        ("Avg ND-GAIN",         str(kpis["avg_ndgain"]),
+         C["amber"],
+         "Average climate readiness score out of 100"),
+        ("WB Projects",         str(kpis["total_projects"]),
+         C["cobalt"],
+         "Active World Bank climate finance projects"),
+        ("Established",         str(kpis["tier1_count"]),
+         C["tier1"],
+         "Tier 1 markets with strong institutional capacity"),
+        ("Emerging",            str(kpis["tier2_count"]),
+         C["tier2"],
+         "Tier 2 markets with growing climate finance activity"),
+        ("Frontier",            str(kpis["tier3_count"]),
+         C["tier3"],
+         "Tier 3 markets with highest conditional finance need"),
+        ("Avg Renewables",      f"{kpis['avg_renewable']}%",
+         C["nature"],
+         "Average renewable share of electricity generation"),
     ]
     return html.Div([
         html.Div(id="kpi-strip", children=[
             html.Div([
                 html.Div(value, style={
-                    "fontSize": "20px", "fontWeight": "700",
-                    "color": colour, "fontFamily": "Inter, sans-serif",
-                    "lineHeight": "1", "marginBottom": "4px"
+                    "fontSize"     : "20px",
+                    "fontWeight"   : "700",
+                    "color"        : colour,
+                    "fontFamily"   : "Inter, sans-serif",
+                    "lineHeight"   : "1",
+                    "marginBottom" : "2px"
                 }),
                 html.Div(label, style={
-                    "fontSize": "11px", "fontWeight": "600",
-                    "textTransform": "uppercase", "letterSpacing": "1px",
-                    "color": C["text_muted"], "fontFamily": "Inter, sans-serif",
-                })
+                    "fontSize"      : "11px",
+                    "fontWeight"    : "600",
+                    "textTransform" : "uppercase",
+                    "letterSpacing" : "1px",
+                    "color"         : C["text_muted"],
+                    "fontFamily"    : "Inter, sans-serif",
+                    "marginBottom"  : "3px"
+                }),
+                html.Div(context, style={
+                    "fontSize"   : "10px",
+                    "fontWeight" : "400",
+                    "color"      : C["text_muted"],
+                    "fontFamily" : "Inter, sans-serif",
+                    "lineHeight" : "1.3",
+                    "maxWidth"   : "140px",
+                    "margin"     : "0 auto"
+                }),
             ], style={
-                "textAlign": "center",
-                "padding": "12px 20px",
-                "borderRight": f"1px solid {C['border']}"
-                               if i < len(items) - 1 else "none",
-                "flexShrink": "0",
+                "textAlign"   : "center",
+                "padding"     : "12px 20px",
+                "borderRight" : f"1px solid {C['border']}"
+                                if i < len(items) - 1 else "none",
+                "flexShrink"  : "0",
             })
-            for i, (label, value, colour) in enumerate(items)
+            for i, (label, value, colour, context) in enumerate(items)
         ], style={
-            "display": "flex",
-            "overflowX": "auto",
-            "justifyContent": "space-between",
+            "display"        : "flex",
+            "overflowX"      : "auto",
+            "justifyContent" : "space-between",
         })
     ], style={
-        "backgroundColor": C["surface"],
-        "borderTop": f"1px solid {C['border']}",
-        "borderBottom": f"1px solid {C['border']}",
-        "position": "relative",
-        "zIndex": "50",
+        "backgroundColor" : C["surface"],
+        "borderTop"       : f"1px solid {C['border']}",
+        "borderBottom"    : f"1px solid {C['border']}",
+        "position"        : "relative",
+        "zIndex"          : "50",
     })
 
 
@@ -450,44 +478,35 @@ def build_commitment_chart():
 def layout():
     return html.Div([
 
-        # Grid background
         html.Div(className="grid-background"),
-
-        # Tooltip
         html.Div(id="globe-tooltip"),
-
-        # Globe container — full viewport background
         html.Div(id="globe-container"),
 
-        # KPI strip — fixed top below navbar
         kpi_strip(),
 
-        # Hidden inputs for D3 to Dash communication
         html.Div([
             dcc.Input(
-                id    = "d3-click-input",
-                type  = "text",
-                value = "",
-                style = {"display": "none"}
+                id="d3-click-input",
+                type="text",
+                value="",
+                style={"display": "none"}
             ),
             dcc.Input(
-                id    = "colour-mode-value",
-                type  = "text",
-                value = "tier_score",
-                style = {"display": "none"}
+                id="colour-mode-value",
+                type="text",
+                value="tier_score",
+                style={"display": "none"}
             ),
-        ], id="d3-click-input-wrapper",
-           style={"display": "none"}),
+        ], style={"display": "none"}),
 
-        # Colour mode selector — floating pill bar
         html.Div([
             html.Span("View by: ", style={
                 "fontSize": "11px", "color": C["text_muted"],
                 "marginRight": "10px", "fontFamily": "Inter, sans-serif",
             }),
             dcc.RadioItems(
-                id         = "globe-colour-selector",
-                options    = [
+                id="globe-colour-selector",
+                options=[
                     {"label": "Investment Tier",
                      "value": "tier_score"},
                     {"label": "ND-GAIN",
@@ -497,13 +516,13 @@ def layout():
                     {"label": "Renewables %",
                      "value": "renewable_electricity_pct"},
                 ],
-                value      = "tier_score",
-                inline     = True,
-                inputStyle = {
+                value="tier_score",
+                inline=True,
+                inputStyle={
                     "marginRight": "5px",
                     "accentColor": C["emerald"]
                 },
-                labelStyle = {
+                labelStyle={
                     "fontSize": "12px",
                     "color": C["text_secondary"],
                     "marginRight": "16px",
@@ -513,18 +532,16 @@ def layout():
             )
         ], id="globe-controls"),
 
-        # Scroll hint
         html.Div(
             "↓  Scroll to explore global analytics",
             id="scroll-hint"
         ),
 
-        # Country panel overlay — slides in from right
         html.Div([
             html.Div(
-                id       = "country-panel-content",
-                children = empty_panel(),
-                style    = {
+                id="country-panel-content",
+                children=empty_panel(),
+                style={
                     "padding"   : "24px",
                     "overflowY" : "auto",
                     "height"    : "100%",
@@ -532,7 +549,6 @@ def layout():
             )
         ], id="country-panel-overlay"),
 
-        # Analytics section — scrolls into view below globe
         html.Div([
 
             html.Div("Global Analysis", style={
@@ -621,6 +637,6 @@ if __name__ == "__main__":
     page = layout()
     print("✅ globe.py verified")
     print(f"   Countries     : {len(master_df)}")
+    print(f"   KPI strip     : 8 items with context")
     print(f"   D3 globe      : full viewport background")
     print(f"   Country panel : slide-in overlay")
-    print(f"   Analytics     : scrolls below globe")
