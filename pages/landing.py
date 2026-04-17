@@ -214,7 +214,7 @@ def layout():
                 ),
 
                 # CTA
-                html.A([
+                dcc.Link([
                     html.Button(
                         "Explore the Dashboard  →",
                         style={
@@ -230,7 +230,7 @@ def layout():
                             "letterSpacing"   : "0.3px",
                         }
                     )
-                ], href="/dashboard"),
+                ], href="/dashboard", refresh=False),
 
                 html.Div([
                     html.Span("↓ ", style={"color": C["emerald"]}),
@@ -716,7 +716,7 @@ for n, step in [
                         "fontFamily"   : "Inter, sans-serif",
                     }
                 ),
-                html.A([
+                dcc.Link([
                     html.Button(
                         "Open Dashboard  →",
                         style={
@@ -731,7 +731,7 @@ for n, step in [
                             "cursor"          : "pointer",
                         }
                     )
-                ], href="/dashboard"),
+                ], href="/dashboard", refresh=False),
                 html.P(
                     "⚠️  For research purposes only. "
                     "Not investment advice.",
