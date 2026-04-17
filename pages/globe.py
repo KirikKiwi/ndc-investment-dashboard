@@ -16,7 +16,8 @@ from data import (load_master, load_tags, load_projects,
                   prepare_map_data, get_global_kpis,
                   get_sector_summary, clean_ndc_text,
                   get_country_detail, get_country_name,
-                  get_regional_mdb, get_country_projects_top3)
+                  get_regional_mdb, get_country_projects_top3,
+                  get_finance_context)
 
 master_df   = load_master()
 tags_df     = load_tags()
@@ -324,6 +325,129 @@ def country_panel_content(iso_code):
         "alignItems"     : "flex-start",
         "marginBottom"   : "16px"
     })
+
+    # ── FINANCE SIGNAL ───────────────────────────────────
+    cond_pct   = country_data.get("conditional_pct_uplift")
+    uncond_pct = country_data.get("unconditional_pct")
+
+    try:
+        cond_pct   = float(cond_pct) if cond_pct and not pd.isna(cond_pct) else None
+        uncond_pct = float(uncond_pct) if uncond_pct and not pd.isna(uncond_pct) else None
+    except Exception:
+        cond_pct   = None
+        uncond_pct = None
+
+    if cond_pct:
+        total_pct  = (uncond_pct or 0) + cond_pct
+        uncond_bar = round((uncond_pct / total_pct) * 100) if uncond_pct else 0
+        cond_bar   = round((cond_pct   / total_pct) * 100)
+
+        bar_section = html.Div([
+            html.Div([
+                html.Span("Unconditional", style={
+                    "fontSize": "10px", "color": C["text_muted"],
+                    "fontFamily": "Inter, sans-serif",
+                    "width": "90px", "display": "inline-block"
+                }),
+                html.Div(style={
+                    "display": "inline-block",
+                    "width": f"{uncond_bar}%",
+                    "backgroundColor": C["emerald"],
+                    "height": "8px",
+                    "borderRadius": "2px",
+                    "verticalAlign": "middle",
+                    "minWidth": "4px",
+                }),
+                html.Span(
+                    f" {uncond_pct:.1f}%" if uncond_pct else "",
+                    style={"fontSize": "10px", "color": C["emerald"],
+                           "fontFamily": "Inter, sans-serif",
+                           "marginLeft": "6px"}
+                ),
+            ], style={"marginBottom": "6px"}),
+            html.Div([
+                html.Span("Conditional", style={
+                    "fontSize": "10px", "color": C["text_muted"],
+                    "fontFamily": "Inter, sans-serif",
+                    "width": "90px", "display": "inline-block"
+                }),
+                html.Div(style={
+                    "display": "inline-block",
+                    "width": f"{cond_bar}%",
+                    "backgroundColor": C["crimson"],
+                    "height": "8px",
+                    "borderRadius": "2px",
+                    "verticalAlign": "middle",
+                    "minWidth": "4px",
+                }),
+                html.Span(
+                    f" {cond_pct:.1f}%",
+                    style={"fontSize": "10px", "color": C["crimson"],
+                           "fontFamily": "Inter, sans-serif",
+                           "marginLeft": "6px"}
+                ),
+            ]),
+        ], style={"marginBottom": "10px"})
+
+        finance_signal = html.Div([
+            html.Div("Climate Finance Signal", style={
+                "fontSize"      : "11px",
+                "fontWeight"    : "600",
+                "textTransform" : "uppercase",
+                "letterSpacing" : "1.5px",
+                "color"         : C["text_muted"],
+                "marginBottom"  : "10px",
+                "fontFamily"    : "Inter, sans-serif",
+            }),
+            bar_section,
+            html.Div(
+                f"{full_name} could achieve {cond_pct:.1f}% "
+                f"additional GHG reduction beyond its unconditional "
+                f"target subject to international climate finance. "
+                f"This is a quantified signal of external capital need.",
+                style={
+                    "fontSize"   : "11px",
+                    "color"      : C["text_secondary"],
+                    "lineHeight" : "1.5",
+                    "fontFamily" : "Inter, sans-serif",
+                }
+            )
+        ], style={
+            "backgroundColor" : C["crimson"] + "10",
+            "border"          : f"1px solid {C['crimson']}30",
+            "borderLeft"      : f"3px solid {C['crimson']}",
+            "borderRadius"    : "4px",
+            "padding"         : "12px 14px",
+            "marginBottom"    : "16px",
+        })
+
+    else:
+        # Proxy finance context for countries without signal
+        context_text = get_finance_context(country_data)
+        finance_signal = html.Div([
+            html.Div("Climate Finance Context", style={
+                "fontSize"      : "11px",
+                "fontWeight"    : "600",
+                "textTransform" : "uppercase",
+                "letterSpacing" : "1.5px",
+                "color"         : C["text_muted"],
+                "marginBottom"  : "8px",
+                "fontFamily"    : "Inter, sans-serif",
+            }),
+            html.Div(context_text, style={
+                "fontSize"   : "12px",
+                "color"      : C["text_secondary"],
+                "lineHeight" : "1.5",
+                "fontFamily" : "Inter, sans-serif",
+            })
+        ], style={
+            "backgroundColor" : C["cobalt"] + "10",
+            "border"          : f"1px solid {C['cobalt']}30",
+            "borderLeft"      : f"3px solid {C['cobalt']}",
+            "borderRadius"    : "4px",
+            "padding"         : "12px 14px",
+            "marginBottom"    : "16px",
+        })
 
     # ── SECTION 2: Climate Target ────────────────────────
     ghg_target  = country_data.get("ghg_target", "")
@@ -679,6 +803,7 @@ def country_panel_content(iso_code):
 
     return html.Div([
         header,
+        finance_signal,
         target_section,
         ndc_section,
         signals_section,

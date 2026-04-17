@@ -374,6 +374,80 @@ def get_country_projects(iso_code, projects_df):
 # VERIFY
 # ============================================================
 
+
+
+# ============================================================
+# FINANCE CONTEXT GENERATOR
+# Returns a contextual finance statement for any country
+# Based on tier, ND-GAIN readiness and WB project count
+# ============================================================
+
+def get_finance_context(country_data):
+    """
+    Returns a finance context statement for a country.
+    Used when no extractable conditional signal exists.
+    """
+    tier       = country_data.get("investment_tier", "")
+    ndgain     = country_data.get("readiness_score")
+    proj_count = country_data.get("wb_project_count", 0) or 0
+
+    try:
+        ndgain     = float(ndgain) if ndgain else None
+        proj_count = int(proj_count)
+    except Exception:
+        ndgain     = None
+        proj_count = 0
+
+    if "Tier 1" in tier:
+        if proj_count > 0:
+            return (
+                "Established market with active MDB engagement. "
+                "Climate finance is primarily market-rate with "
+                "selective concessional instruments for specific "
+                "transition projects."
+            )
+        return (
+            "Established market with strong domestic climate "
+            "finance capacity. International capital flows are "
+            "predominantly private and market-rate."
+        )
+
+    if "Tier 2" in tier:
+        if proj_count >= 3:
+            return (
+                "Emerging market with demonstrated MDB engagement "
+                "and growing climate finance activity. Mix of "
+                "concessional and commercial instruments. "
+                "Blended finance structures are applicable."
+            )
+        return (
+            "Emerging market with moderate climate finance "
+            "infrastructure. Concessional finance and guarantees "
+            "can catalyse private investment in key sectors."
+        )
+
+    if "Tier 3" in tier:
+        if ndgain and ndgain < 0.3:
+            return (
+                "Frontier market with high climate vulnerability "
+                "and limited institutional readiness. Grant and "
+                "highly concessional finance required to unlock "
+                "climate investment. Strong GCF and adaptation "
+                "fund eligibility."
+            )
+        return (
+            "Frontier market with significant climate finance "
+            "need. High dependency on concessional, grant and "
+            "blended finance. MDB de-risking instruments "
+            "essential to attract private capital."
+        )
+
+    return (
+        "Climate finance profile not available. "
+        "Refer to country NDC and MDB project data for context."
+    )
+
+
 if __name__ == "__main__":
     master   = load_master()
     tags     = load_tags()
