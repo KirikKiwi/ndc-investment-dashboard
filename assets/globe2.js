@@ -36,6 +36,7 @@
         countries     : null,
         scale         : 1,
         lastColourMode: null,
+        manualStop    : false,
     };
 
     // Display names for territories not in NDC database
@@ -154,12 +155,20 @@
         }
     }
 
-    function startRotation() { state.rotating = true; }
+    function startRotation() {
+        if (!state.manualStop) {
+            state.rotating = true;
+        }
+    }
 
-    function stopRotation() {
+    function stopRotation(manual) {
         state.rotating = false;
         clearTimeout(state.rotateTimer);
-        state.rotateTimer = setTimeout(startRotation, CONFIG.rotateDelay);
+        if (manual) {
+            state.manualStop = true;
+        } else if (!state.manualStop) {
+            state.rotateTimer = setTimeout(startRotation, CONFIG.rotateDelay);
+        }
     }
 
     function buildISOLookup() {
@@ -647,15 +656,15 @@
             return;
         }
         btn.addEventListener("click", function() {
-            if (state.rotating) {
-                stopRotation();
-                clearTimeout(state.rotateTimer);
+            if (state.rotating || !state.manualStop) {
+                stopRotation(true);
                 state.rotating    = false;
                 btn.textContent   = "▶ Resume";
                 btn.style.color   = "#e67e22";
                 btn.style.border  = "1px solid #e67e2240";
                 btn.style.backgroundColor = "#e67e2210";
             } else {
+                state.manualStop  = false;
                 state.rotating    = true;
                 btn.textContent   = "⏸ Pause";
                 btn.style.color   = "#00c896";
@@ -666,17 +675,127 @@
     }
     setupRotationToggle();
 
-    // Close panel on outside click
-    document.addEventListener("click", function(e) {
-        const panel   = document.getElementById("country-panel-overlay");
-        const isOpen  = panel && panel.classList.contains("open");
-        if (!isOpen) return;
+    // Tier 3 close button and body scroll lock
+    // Uses a flag to prevent country panel from closing on same click
+    let tier3JustClosed = false;
 
-        const clickedInsidePanel = panel.contains(e.target);
-        const clickedOnGlobe    = e.target.closest("#globe-svg") ||
-                                   e.target.closest(".country");
-        if (!clickedInsidePanel && !clickedOnGlobe) {
-            closePanel();
+    document.addEventListener("click", function(e) {
+        const closeTier3 =
+            (e.target && e.target.id === "close-tier3-btn") ||
+            (e.target && e.target.closest && e.target.closest("#close-tier3-btn"));
+
+        const tier3Panel   = document.getElementById("tier3-panel-overlay");
+        const isOpen       = tier3Panel && tier3Panel.classList.contains("open");
+        const outsideTier3 = isOpen &&
+            !tier3Panel.contains(e.target) &&
+            !e.target.closest(".sector-pill-row");
+
+        if (closeTier3 || outsideTier3) {
+            if (tier3Panel) tier3Panel.classList.remove("open");
+            document.body.classList.remove("tier3-open");
+            const globe = document.getElementById("globe-container");
+            if (globe) globe.classList.remove("tier3-open");
+            const cpanel = document.getElementById("country-panel-overlay");
+            if (cpanel) cpanel.classList.remove("tier3-open");
+
+            // Set flag so country panel handler ignores this click
+            tier3JustClosed = true;
+            setTimeout(function() { tier3JustClosed = false; }, 50);
+
+            const closeInput = document.getElementById("tier3-close-input");
+            if (closeInput) {
+                const setter = Object.getOwnPropertyDescriptor(
+                    window.HTMLInputElement.prototype, "value"
+                ).set;
+                setter.call(closeInput, Date.now().toString());
+                closeInput.dispatchEvent(
+                    new Event("input", { bubbles: true })
+                );
+            }
+        }
+    }, true); // capture phase — fires before country panel handler
+
+    // Watch for tier3 panel opening to lock scroll
+    const tier3Observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+            if (m.target.id === "tier3-panel-overlay") {
+                const isOpen = m.target.classList.contains("open");
+                document.body.classList.toggle("tier3-open", isOpen);
+                const globe = document.getElementById("globe-container");
+                if (globe) globe.classList.toggle("tier3-open", isOpen);
+                const cpanel = document.getElementById("country-panel-overlay");
+                if (cpanel) cpanel.classList.toggle("tier3-open", isOpen);
+            }
+        });
+    });
+
+    function setupTier3Observer() {
+        const panel = document.getElementById("tier3-panel-overlay");
+        if (panel) {
+            tier3Observer.observe(panel, { attributes: true,
+                                           attributeFilter: ["class"] });
+        } else {
+            setTimeout(setupTier3Observer, 500);
+        }
+    }
+    setupTier3Observer();
+
+    // Sector pill click handler — uses data attribute
+    // More reliable than Dash pattern matching for re-rendered components
+    document.addEventListener("click", function(e) {
+        const row = e.target.closest(".sector-pill-row");
+        if (!row) return;
+
+        const sectorKey = row.getAttribute("data-sector-key");
+        if (!sectorKey) return;
+
+        // Set the tier3 input value to trigger Dash callback
+        const input = document.getElementById("tier3-sector-input");
+        if (input) {
+            const setter = Object.getOwnPropertyDescriptor(
+                window.HTMLInputElement.prototype, "value"
+            ).set;
+            // Add timestamp to force Dash to see change even if same value
+            setter.call(input, sectorKey + "||" + Date.now());
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            console.log("Sector clicked:", sectorKey);
+        }
+    });
+
+    // Close panel on outside click
+    // If Tier 3 is open, outside click closes Tier 3 first
+    // Country panel only closes when Tier 3 is already closed
+    document.addEventListener("click", function(e) {
+        const countryPanel = document.getElementById("country-panel-overlay");
+        const tier3Panel   = document.getElementById("tier3-panel-overlay");
+        const countryOpen  = countryPanel && countryPanel.classList.contains("open");
+        const tier3Open    = tier3Panel   && tier3Panel.classList.contains("open");
+
+        if (!countryOpen) return;
+
+        const clickedInsideCountry  = countryPanel.contains(e.target);
+        const clickedInsideTier3    = tier3Panel && tier3Panel.contains(e.target);
+        const clickedOnGlobe        = e.target.closest("#globe-svg") ||
+                                      e.target.closest(".country");
+        const clickedOnControls     = e.target.closest("#globe-controls");
+        const clickedOnScrollHint   = e.target.closest("#scroll-hint");
+        const clickedOnSectorPill   = e.target.closest(".sector-pill-row");
+
+        const isExempt = clickedInsideCountry ||
+                         clickedInsideTier3   ||
+                         clickedOnGlobe       ||
+                         clickedOnControls    ||
+                         clickedOnScrollHint  ||
+                         clickedOnSectorPill;
+
+        if (!isExempt) {
+            if (tier3JustClosed) {
+                // Tier 3 was just closed on this click — don't close country panel
+                return;
+            } else if (!tier3Open) {
+                // Only country panel open — close it
+                closePanel();
+            }
         }
     });
 

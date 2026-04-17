@@ -13,6 +13,7 @@ from components import C, T, SECTOR_COLOURS, TIER_COLOURS
 from components import (confidence_badge, sector_pill, tier_badge,
                         data_row, flag_pill, empty_state)
 from pages.analytics import layout as analytics_layout
+from pages.tier3 import tier3_content
 from data import (load_master, load_tags, load_projects,
                   prepare_map_data, get_global_kpis,
                   get_sector_summary, clean_ndc_text,
@@ -595,6 +596,7 @@ def country_panel_content(iso_code):
             meta_parts = [x for x in [lens, instrument, horizon] if x]
             meta_str   = "  ·  ".join(meta_parts) if meta_parts else ""
 
+            sector_key = f"{iso_code}||{tag['sector']}"
             sector_rows.append(
                 html.Div([
                     html.Div([
@@ -615,11 +617,37 @@ def country_panel_content(iso_code):
                     "alignItems"     : "flex-start",
                     "padding"        : "8px 0",
                     "borderBottom"   : f"1px solid {C['border']}",
-                })
+                    "cursor"         : "pointer",
+                },
+                **{"data-sector-key": sector_key},
+                className = "sector-pill-row",
+                )
             )
 
         signals_section = html.Div([
-            section_title("Investment Signals"),
+            html.Div([
+                html.Div([
+                    html.Span("Investment Signals", style={
+                        "fontSize"      : "11px",
+                        "fontWeight"    : "600",
+                        "textTransform" : "uppercase",
+                        "letterSpacing" : "1.5px",
+                        "color"         : C["text_muted"],
+                        "fontFamily"    : "Inter, sans-serif",
+                    }),
+                ]),
+                html.Div("Click a sector for full analysis →", style={
+                    "fontSize"   : "10px",
+                    "color"      : C["emerald"],
+                    "fontFamily" : "Inter, sans-serif",
+                    "fontStyle"  : "italic",
+                }),
+            ], style={
+                "display"        : "flex",
+                "justifyContent" : "space-between",
+                "alignItems"     : "center",
+                "marginBottom"   : "12px",
+            }),
             html.Div(sector_rows)
         ], style={"marginBottom": "16px"})
     else:
@@ -1060,6 +1088,30 @@ def layout():
                 }
             )
         ], id="country-panel-overlay"),
+
+        # Tier 3 panel overlay
+        html.Div([
+            html.Div(
+                id    = "tier3-panel-content",
+                style = {"padding": "32px 28px", "minHeight": "100%"}
+            )
+        ], id="tier3-panel-overlay"),
+
+        # Hidden input for sector clicks
+        dcc.Input(
+            id    = "tier3-sector-input",
+            type  = "text",
+            value = "",
+            style = {"display": "none"}
+        ),
+
+        # Hidden input for tier3 close signal
+        dcc.Input(
+            id    = "tier3-close-input",
+            type  = "text",
+            value = "",
+            style = {"display": "none"}
+        ),
 
         html.Div([
             html.Div(id="analytics-section-content",

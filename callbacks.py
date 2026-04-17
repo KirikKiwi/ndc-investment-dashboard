@@ -143,3 +143,48 @@ def export_csv(n_clicks, region, group, country):
     return _dcc.send_data_frame(
         out.to_csv, "ndc_dashboard_export.csv", index=False
     )
+
+
+# ============================================================
+# TIER 3 CALLBACKS
+# ============================================================
+
+from pages.tier3 import tier3_content as build_tier3
+
+
+@callback(
+    Output("tier3-panel-content", "children"),
+    Output("tier3-panel-overlay", "className"),
+    Input("tier3-sector-input",   "value"),
+    Input("tier3-close-input",    "value"),
+    prevent_initial_call=True,
+)
+def manage_tier3(sector_value, close_value):
+    from dash import no_update, ctx, html
+
+    triggered = ctx.triggered_id
+
+    # Close signal received
+    if triggered == "tier3-close-input":
+        return no_update, ""
+
+    # Sector pill clicked
+    if not sector_value:
+        return no_update, no_update
+
+    parts = sector_value.split("||")
+    if len(parts) < 2:
+        return no_update, no_update
+
+    iso_code    = parts[0]
+    sector_name = parts[1]
+
+    try:
+        content = build_tier3(iso_code, sector_name)
+    except Exception as e:
+        content = html.Div(
+            f"Error loading sector: {e}",
+            style={"color": "#888", "padding": "20px"}
+        )
+
+    return content, "open"

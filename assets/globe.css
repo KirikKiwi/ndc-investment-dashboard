@@ -199,3 +199,76 @@
     pointer-events: none !important;
     transition: opacity 0.3s ease !important;
 }
+
+/* ============================================================
+   TIER 3 — SECTOR DEEP-DIVE PANEL
+   ============================================================ */
+
+#tier3-panel-overlay {
+    position: fixed;
+    top: 0;
+    left: -70%;
+    width: 65%;
+    height: 100vh;
+    background-color: #111111;
+    border-right: 1px solid #2a2a2a;
+    z-index: 200;
+    overflow-y: auto;
+    transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 40px rgba(0,0,0,0.6);
+}
+
+#tier3-panel-overlay.open {
+    left: 0;
+}
+
+/* When Tier 3 is open — lock page scroll */
+body.tier3-open {
+    overflow: hidden;
+}
+
+/* Globe fades behind panels when Tier 3 is open */
+#globe-container.tier3-open {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Country panel shifts right when Tier 3 is open */
+#country-panel-overlay.tier3-open {
+    right: 0;
+    border-left: 1px solid #2a2a2a;
+}
+
+/* Tier 3 content padding */
+#tier3-panel-content {
+    padding: 32px 28px;
+    min-height: 100%;
+}
+
+/* Sector pill rows — interactive styling */
+.sector-pill-row {
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+    border-radius: 4px;
+    margin: 0 -8px;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+}
+
+.sector-pill-row:hover {
+    background-color: rgba(0, 200, 150, 0.06);
+    border-color: rgba(0, 200, 150, 0.3) !important;
+}
+
+.sector-pill-row::after {
+    content: "→";
+    color: #00c896;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    margin-left: 4px;
+}
+
+.sector-pill-row:hover::after {
+    opacity: 1;
+}
