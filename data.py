@@ -240,7 +240,9 @@ def prepare_map_data(master_df, tags_df):
             if pd.notna(r.get("renewable_electricity_pct"))
             else "N/A"
         )
-        name = get_country_name(r["iso_code"])
+        name      = get_country_name(r["iso_code"])
+        ter_note  = get_territory_note(r["iso_code"])
+        ter_line  = f"<br><i>{ter_note}</i>" if ter_note else ""
         return (
             f"<b>{name}</b><br>"
             f"Tier: {r['investment_tier']}<br>"
@@ -250,6 +252,7 @@ def prepare_map_data(master_df, tags_df):
             f"Population: {r['pop_display']}<br>"
             f"ND-GAIN: {ndgain}<br>"
             f"Renewables: {renewable}"
+            f"{ter_line}"
         )
 
     df["hover_text"] = df.apply(make_hover, axis=1)
@@ -446,6 +449,178 @@ def get_finance_context(country_data):
         "Climate finance profile not available. "
         "Refer to country NDC and MDB project data for context."
     )
+
+
+
+
+# ============================================================
+# REGIONAL AND GROUP CLASSIFICATIONS
+# UN regional groupings and special country classifications
+# Used for filter system across all analytics
+# ============================================================
+
+REGIONS = {
+    "Sub-Saharan Africa": [
+        "AGO","BEN","BWA","BFA","BDI","CMR","CAF","TCD","COM",
+        "COD","COG","CIV","DJI","GNQ","ERI","ETH","GAB","GMB",
+        "GHA","GIN","GNB","KEN","LSO","LBR","MDG","MWI","MLI",
+        "MRT","MUS","MOZ","NAM","NER","NGA","RWA","STP","SEN",
+        "SLE","SOM","ZAF","SDN","SWZ","TZA","TGO","UGA","ZMB",
+        "ZWE","CPV","SSD","SYC",
+    ],
+    "North Africa": ["DZA","EGY","LBY","MAR","TUN"],
+    "Middle East": [
+        "BHR","IRQ","IRN","ISR","JOR","KWT","LBN","OMN",
+        "PSE","QAT","SAU","SYR","ARE","YEM","TUR",
+    ],
+    "South Asia": ["AFG","BGD","BTN","IND","MDV","NPL","PAK","LKA"],
+    "East Asia Pacific": [
+        "AUS","BRN","KHM","CHN","FJI","IDN","JPN","KIR","KOR",
+        "LAO","MHL","FSM","MNG","MMR","NZL","PLW","PNG","PHL",
+        "WSM","SGP","SLB","TLS","TON","TUV","VUT","VNM","PRK",
+        "COK","NRU","MYS","THA","NIU",
+    ],
+    "Central Asia": ["KAZ","KGZ","TJK","TKM","UZB"],
+    "Eastern Europe": [
+        "ALB","ARM","AZE","BLR","BIH","BGR","HRV","CYP","CZE",
+        "EST","GEO","HUN","LVA","LTU","MKD","MDA","MNE","POL",
+        "ROU","RUS","SRB","SVK","SVN","UKR",
+    ],
+    "Western Europe": [
+        "AUT","BEL","DNK","FIN","FRA","DEU","GRC","ISL","IRL",
+        "ITA","LIE","LUX","MLT","MCO","NLD","NOR","PRT","SMR",
+        "ESP","SWE","CHE","GBR","AND","VAT",
+    ],
+    "Latin America Caribbean": [
+        "ATG","ARG","BHS","BRB","BLZ","BOL","BRA","CHL","COL",
+        "CRI","CUB","DMA","DOM","ECU","SLV","GRD","GTM","GUY",
+        "HTI","HND","JAM","MEX","NIC","PAN","PRY","PER","KNA",
+        "LCA","VCT","SUR","TTO","URY","VEN",
+    ],
+    "North America": ["CAN","USA"],
+}
+
+GROUPS = {
+    "SIDS": [
+        "ATG","BHS","BRB","BLZ","COM","CPV","CUB","DMA","DOM",
+        "FJI","GRD","GUY","HTI","JAM","KIR","MDV","MHL","FSM",
+        "MUS","NRU","PLW","PNG","WSM","STP","SGP","SLB","KNA",
+        "LCA","VCT","SUR","TLS","TON","TTO","TUV","VUT",
+    ],
+    "LDC": [
+        "AFG","AGO","BGD","BEN","BTN","BFA","BDI","KHM","CAF",
+        "TCD","COM","COD","DJI","ERI","ETH","GMB","GIN","GNB",
+        "HTI","KIR","LAO","LSO","LBR","MDG","MWI","MLI","MRT",
+        "MOZ","MMR","NPL","NER","RWA","STP","SEN","SLE","SOM",
+        "SDN","TLS","TZA","TGO","TUV","UGA","YEM","ZMB",
+    ],
+    "G20": [
+        "ARG","AUS","BRA","CAN","CHN","FRA","DEU","IND","IDN",
+        "ITA","JPN","KOR","MEX","RUS","SAU","ZAF","TUR","GBR","USA",
+    ],
+    "OECD": [
+        "AUS","AUT","BEL","CAN","CHL","COL","CRI","CZE","DNK",
+        "EST","FIN","FRA","DEU","GRC","HUN","ISL","IRL","ISR",
+        "ITA","JPN","KOR","LVA","LTU","LUX","MEX","NLD","NZL",
+        "NOR","POL","PRT","SVK","SVN","ESP","SWE","CHE","TUR",
+        "GBR","USA",
+    ],
+    "EU": [
+        "AUT","BEL","BGR","HRV","CYP","CZE","DNK","EST","FIN",
+        "FRA","DEU","GRC","HUN","IRL","ITA","LVA","LTU","LUX",
+        "MLT","NLD","POL","PRT","ROU","SVK","SVN","ESP","SWE",
+    ],
+}
+
+# Reverse lookup — ISO to region
+ISO_TO_REGION = {}
+for region, isos in REGIONS.items():
+    for iso in isos:
+        ISO_TO_REGION[iso] = region
+
+
+def get_region(iso_code):
+    """Returns the region name for a given ISO code."""
+    return ISO_TO_REGION.get(iso_code, "Other")
+
+
+def filter_master(master_df, region=None, group=None, iso_code=None):
+    """
+    Filters master_countries dataframe by region, group or country.
+    Returns filtered dataframe.
+    """
+    df = master_df.copy()
+
+    if iso_code and iso_code != "ALL":
+        return df[df["iso_code"] == iso_code]
+
+    if group and group != "ALL":
+        group_isos = GROUPS.get(group, [])
+        df = df[df["iso_code"].isin(group_isos)]
+
+    if region and region != "ALL":
+        region_isos = REGIONS.get(region, [])
+        df = df[df["iso_code"].isin(region_isos)]
+
+    return df
+
+
+
+
+# ============================================================
+# TERRITORY COVERAGE NOTES
+# Countries whose NDC covers overseas territories
+# Displayed in country card and globe tooltip
+# ============================================================
+
+TERRITORY_NOTES = {
+    "FRA": (
+        "France NDC covers all French territory including overseas "
+        "regions: French Guiana, Martinique, Guadeloupe, "
+        "Reunion and Mayotte."
+    ),
+    "NOR": (
+        "Norway NDC covers Norwegian territory including "
+        "Svalbard and Jan Mayen."
+    ),
+    "NZL": (
+        "New Zealand NDC covers New Zealand including Tokelau. "
+        "Cook Islands and Niue submit separately."
+    ),
+    "GBR": (
+        "United Kingdom NDC covers Great Britain and Northern "
+        "Ireland. Overseas territories follow UK commitments."
+    ),
+    "USA": (
+        "United States NDC covers all US states and territories "
+        "including Puerto Rico and US Virgin Islands."
+    ),
+    "DNK": (
+        "Denmark NDC covers Denmark. Greenland and Faroe Islands "
+        "are self-governing and not covered by this NDC."
+    ),
+    "AUS": (
+        "Australia NDC covers Australian territory including "
+        "all external territories."
+    ),
+    "PRT": (
+        "Portugal NDC covers Portugal including the Azores "
+        "and Madeira."
+    ),
+    "ESP": (
+        "Spain NDC covers Spain including the Canary Islands, "
+        "Ceuta and Melilla."
+    ),
+    "NLD": (
+        "Netherlands NDC covers the Netherlands. Caribbean "
+        "Netherlands follow EU climate commitments."
+    ),
+}
+
+
+def get_territory_note(iso_code):
+    """Returns territory coverage note for a country if applicable."""
+    return TERRITORY_NOTES.get(iso_code)
 
 
 if __name__ == "__main__":

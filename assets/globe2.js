@@ -614,4 +614,82 @@
 
     window.NDCGlobe = { updateColourMode, closePanel };
 
+    // Hide controls and scroll hint based on scroll position
+    window.addEventListener("scroll", function() {
+        const scrolled   = window.scrollY;
+        const windowH    = window.innerHeight;
+        const docH       = document.documentElement.scrollHeight;
+        const controls   = document.getElementById("globe-controls");
+        const scrollHint = document.getElementById("scroll-hint");
+        const pastGlobe  = scrolled > windowH * 0.6;
+        const nearBottom = (scrolled + windowH) >= (docH - 100);
+
+        if (controls) {
+            controls.style.opacity       = pastGlobe ? "0" : "1";
+            controls.style.pointerEvents = pastGlobe ? "none" : "all";
+            controls.style.transition    = "opacity 0.3s ease";
+        }
+        if (scrollHint) {
+            const hideHint = pastGlobe || nearBottom;
+            if (hideHint) {
+                scrollHint.classList.add("hidden");
+            } else {
+                scrollHint.classList.remove("hidden");
+            }
+        }
+    });
+
+    // Rotation toggle click handler
+    function setupRotationToggle() {
+        const btn = document.getElementById("rotation-toggle");
+        if (!btn) {
+            setTimeout(setupRotationToggle, 500);
+            return;
+        }
+        btn.addEventListener("click", function() {
+            if (state.rotating) {
+                stopRotation();
+                clearTimeout(state.rotateTimer);
+                state.rotating    = false;
+                btn.textContent   = "▶ Resume";
+                btn.style.color   = "#e67e22";
+                btn.style.border  = "1px solid #e67e2240";
+                btn.style.backgroundColor = "#e67e2210";
+            } else {
+                state.rotating    = true;
+                btn.textContent   = "⏸ Pause";
+                btn.style.color   = "#00c896";
+                btn.style.border  = "1px solid #00c89640";
+                btn.style.backgroundColor = "#00c89610";
+            }
+        });
+    }
+    setupRotationToggle();
+
+    // Close panel on outside click
+    document.addEventListener("click", function(e) {
+        const panel   = document.getElementById("country-panel-overlay");
+        const isOpen  = panel && panel.classList.contains("open");
+        if (!isOpen) return;
+
+        const clickedInsidePanel = panel.contains(e.target);
+        const clickedOnGlobe    = e.target.closest("#globe-svg") ||
+                                   e.target.closest(".country");
+        if (!clickedInsidePanel && !clickedOnGlobe) {
+            closePanel();
+        }
+    });
+
+    // Auto-close panel when scrolled past globe
+    window.addEventListener("scroll", function() {
+        const scrolled  = window.scrollY;
+        const windowH   = window.innerHeight;
+        const panel     = document.getElementById("country-panel-overlay");
+        const pastGlobe = scrolled > windowH * 0.8;
+
+        if (pastGlobe && panel && panel.classList.contains("open")) {
+            closePanel();
+        }
+    }, { passive: true });
+
 })();

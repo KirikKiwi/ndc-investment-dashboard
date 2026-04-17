@@ -12,12 +12,13 @@ import pandas as pd
 from components import C, T, SECTOR_COLOURS, TIER_COLOURS
 from components import (confidence_badge, sector_pill, tier_badge,
                         data_row, flag_pill, empty_state)
+from pages.analytics import layout as analytics_layout
 from data import (load_master, load_tags, load_projects,
                   prepare_map_data, get_global_kpis,
                   get_sector_summary, clean_ndc_text,
                   get_country_detail, get_country_name,
                   get_regional_mdb, get_country_projects_top3,
-                  get_finance_context)
+                  get_finance_context, get_territory_note)
 
 master_df   = load_master()
 tags_df     = load_tags()
@@ -299,6 +300,50 @@ def country_panel_content(iso_code):
     mdb_code, mdb_name = get_regional_mdb(iso_code)
 
     # ── SECTION 1: Header ────────────────────────────────
+    territory_note = get_territory_note(iso_code)
+
+    territory_pill = html.Div()
+    if territory_note:
+        territory_pill = html.Div([
+            html.Span('◈ ', style={
+                'color': C['cobalt'], 'fontSize': '11px',
+            }),
+            html.Span(territory_note, style={
+                'fontSize': '11px',
+                'color': C['text_secondary'],
+                'fontFamily': 'Inter, sans-serif',
+                'lineHeight': '1.5',
+            })
+        ], style={
+            'backgroundColor': C['cobalt'] + '10',
+            'border': f"1px solid {C['cobalt']}30",
+            'borderRadius': '4px',
+            'padding': '8px 12px',
+            'marginBottom': '12px',
+        })
+
+    territory_note = get_territory_note(iso_code)
+
+    territory_pill = html.Div()
+    if territory_note:
+        territory_pill = html.Div([
+            html.Span("\u25c8 ", style={
+                "color": C["cobalt"], "fontSize": "11px",
+            }),
+            html.Span(territory_note, style={
+                "fontSize": "11px",
+                "color": C["text_secondary"],
+                "fontFamily": "Inter, sans-serif",
+                "lineHeight": "1.5",
+            })
+        ], style={
+            "backgroundColor": C["cobalt"] + "10",
+            "border": f"1px solid {C['cobalt']}30",
+            "borderRadius": "4px",
+            "padding": "8px 12px",
+            "marginBottom": "12px",
+        })
+
     header = html.Div([
         html.Div([
             html.Div(full_name, style={
@@ -803,6 +848,7 @@ def country_panel_content(iso_code):
 
     return html.Div([
         header,
+        territory_pill,
         finance_signal,
         target_section,
         ndc_section,
@@ -941,11 +987,32 @@ def layout():
         ], style={"display": "none"}),
 
         html.Div([
-            html.Span("View by: ", style={
-                "fontSize"    : "11px",
-                "color"       : C["text_muted"],
-                "marginRight" : "10px",
-                "fontFamily"  : "Inter, sans-serif",
+            html.Div(
+            id    = "rotation-toggle",
+            children = "⏸ Pause",
+            style = {
+                "fontSize"        : "10px",
+                "fontWeight"      : "600",
+                "color"           : C["emerald"],
+                "fontFamily"      : "Inter, sans-serif",
+                "cursor"          : "pointer",
+                "padding"         : "4px 8px",
+                "border"          : f"1px solid {C['emerald']}40",
+                "borderRadius"    : "4px",
+                "backgroundColor" : C["emerald"] + "10",
+                "textAlign"       : "center",
+                "marginBottom"    : "12px",
+                "userSelect"      : "none",
+            }
+        ),
+        html.Div("View by", style={
+                "fontSize"      : "9px",
+                "fontWeight"    : "600",
+                "textTransform" : "uppercase",
+                "letterSpacing" : "1.5px",
+                "color"         : C["text_muted"],
+                "fontFamily"    : "Inter, sans-serif",
+                "marginBottom"  : "4px",
             }),
             dcc.RadioItems(
                 id="globe-colour-selector",
@@ -960,17 +1027,19 @@ def layout():
                      "value": "renewable_electricity_pct"},
                 ],
                 value="tier_score",
-                inline=True,
+                inline=False,
                 inputStyle={
-                    "marginRight" : "5px",
-                    "accentColor" : C["emerald"]
+                    "marginRight" : "6px",
+                    "accentColor" : C["emerald"],
                 },
                 labelStyle={
-                    "fontSize"    : "12px",
+                    "fontSize"    : "11px",
                     "color"       : C["text_secondary"],
-                    "marginRight" : "16px",
                     "cursor"      : "pointer",
                     "fontFamily"  : "Inter, sans-serif",
+                    "display"     : "flex",
+                    "alignItems"  : "center",
+                    "marginBottom": "6px",
                 },
             )
         ], id="globe-controls"),
@@ -993,95 +1062,9 @@ def layout():
         ], id="country-panel-overlay"),
 
         html.Div([
-
-            html.Div("Global Analysis", style={
-                "fontSize"      : "11px",
-                "fontWeight"    : "600",
-                "textTransform" : "uppercase",
-                "letterSpacing" : "1.5px",
-                "color"         : C["text_muted"],
-                "marginBottom"  : "8px",
-                "fontFamily"    : "Inter, sans-serif",
-            }),
-            html.H2("Investment signals across all NDCs", style={
-                "fontSize"     : "22px",
-                "fontWeight"   : "600",
-                "color"        : C["text"],
-                "marginBottom" : "40px",
-                "fontFamily"   : "Inter, sans-serif",
-            }),
-
-            html.Div([
-                html.Div("Sector Coverage", style={
-                    "fontSize"      : "11px",
-                    "fontWeight"    : "600",
-                    "textTransform" : "uppercase",
-                    "letterSpacing" : "1.5px",
-                    "color"         : C["text_muted"],
-                    "marginBottom"  : "16px",
-                    "fontFamily"    : "Inter, sans-serif",
-                }),
-                dcc.Graph(
-                    id="sector-bar-chart",
-                    figure=build_sector_chart(),
-                    config={"displayModeBar": False}
-                )
-            ], style={
-                "backgroundColor" : C["surface"],
-                "border"          : f"1px solid {C['border']}",
-                "borderRadius"    : "6px",
-                "padding"         : "24px",
-                "marginBottom"    : "24px"
-            }),
-
-            html.Div([
-                html.Div([
-                    html.Div("Investment Tier Distribution", style={
-                        "fontSize"      : "11px",
-                        "fontWeight"    : "600",
-                        "textTransform" : "uppercase",
-                        "letterSpacing" : "1.5px",
-                        "color"         : C["text_muted"],
-                        "marginBottom"  : "16px",
-                        "fontFamily"    : "Inter, sans-serif",
-                    }),
-                    dcc.Graph(
-                        id="tier-donut-chart",
-                        figure=build_tier_donut(),
-                        config={"displayModeBar": False}
-                    )
-                ], style={
-                    "backgroundColor" : C["surface"],
-                    "border"          : f"1px solid {C['border']}",
-                    "borderRadius"    : "6px",
-                    "padding"         : "24px",
-                    "flex"            : "1",
-                }),
-                html.Div([
-                    html.Div("Commitment Type", style={
-                        "fontSize"      : "11px",
-                        "fontWeight"    : "600",
-                        "textTransform" : "uppercase",
-                        "letterSpacing" : "1.5px",
-                        "color"         : C["text_muted"],
-                        "marginBottom"  : "16px",
-                        "fontFamily"    : "Inter, sans-serif",
-                    }),
-                    dcc.Graph(
-                        id="commitment-bar-chart",
-                        figure=build_commitment_chart(),
-                        config={"displayModeBar": False}
-                    )
-                ], style={
-                    "backgroundColor" : C["surface"],
-                    "border"          : f"1px solid {C['border']}",
-                    "borderRadius"    : "6px",
-                    "padding"         : "24px",
-                    "flex"            : "1",
-                }),
-            ], style={"display": "flex", "gap": "24px"}),
-
-        ], id="analytics-section", style={"padding": "80px"}),
+            html.Div(id="analytics-section-content",
+                     children=analytics_layout()),
+        ], id="analytics-section"),
 
     ], style={
         "fontFamily"      : "Inter, sans-serif",

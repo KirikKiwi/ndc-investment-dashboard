@@ -5,7 +5,10 @@
 
 #globe-container {
     position: fixed;
-    inset: 0;
+    top: 100px;
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 1;
     display: flex;
     align-items: center;
@@ -94,18 +97,20 @@
 /* Controls bar */
 #globe-controls {
     position: fixed;
-    bottom: 32px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
     z-index: 50;
     background-color: rgba(17,17,17,0.9);
     border: 1px solid #2a2a2a;
-    border-radius: 24px;
-    padding: 8px 24px;
+    border-radius: 8px;
+    padding: 16px 12px;
     display: flex;
-    align-items: center;
-    gap: 24px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
     backdrop-filter: blur(8px);
+    transition: opacity 0.3s ease;
 }
 
 /* Tooltip */
@@ -133,18 +138,31 @@
 /* Scroll indicator */
 #scroll-hint {
     position: fixed;
-    bottom: 80px;
+    bottom: 32px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 50;
-    color: #555555;
+    color: #00c896;
     font-family: Inter, sans-serif;
-    font-size: 11px;
-    letter-spacing: 0.5px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
     text-align: center;
-    animation: fadeInUp 2s ease forwards;
-    animation-delay: 1s;
+    text-transform: uppercase;
+    animation: fadeInUp 2s ease forwards, pulse 3s ease-in-out infinite;
+    animation-delay: 1s, 3s;
     opacity: 0;
+    background-color: rgba(17,17,17,0.8);
+    border: 1px solid rgba(0,200,150,0.3);
+    border-radius: 20px;
+    padding: 8px 20px;
+    backdrop-filter: blur(4px);
+    white-space: nowrap;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.5; }
 }
 
 @keyframes fadeInUp {
@@ -174,4 +192,10 @@
     pointer-events: none;
     z-index: 0;
     letter-spacing: -8px;
+}
+
+.hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.3s ease !important;
 }
