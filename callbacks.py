@@ -1,55 +1,39 @@
 # ============================================================
 # NDC Investment Dashboard
-# callbacks.py — All interactivity logic
+# callbacks.py — All interactivity
 # ============================================================
 
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from dash import Input, Output, callback, no_update
-from pages.globe import (build_globe, country_panel_content,
-                         empty_panel)
-
-# ============================================================
-# GLOBE — Update colour on selector change
-# ============================================================
-
-@callback(
-    Output("globe-map", "figure"),
-    Input("globe-colour-selector", "value"),
-    Input("projection-selector",   "value"),
+from dash import Input, Output, callback
+from pages.globe import (
+    country_panel_content,
+    empty_panel,
 )
-def update_globe(colour_by, projection):
-    return build_globe(
-        colour_by  = colour_by  or "tier_score",
-        projection = projection or "orthographic"
-    )
-
-
-# ============================================================
-# COUNTRY PANEL — Open on country click
-# ============================================================
 
 @callback(
     Output("country-panel-content", "children"),
-    Input("globe-map", "clickData"),
+    Input("d3-click-input", "value"),
 )
-def update_country_panel(click_data):
-    if click_data is None:
+def update_country_panel(iso_code):
+    if not iso_code or len(iso_code) != 3:
         return empty_panel()
     try:
-        iso = click_data["points"][0]["location"]
-        return country_panel_content(iso)
+        return country_panel_content(iso_code.upper())
     except Exception:
         return empty_panel()
 
 
-# ============================================================
-# VERIFY
-# ============================================================
+@callback(
+    Output("colour-mode-value", "value"),
+    Input("globe-colour-selector", "value"),
+)
+def update_colour_mode(mode):
+    return mode or "tier_score"
+
 
 if __name__ == "__main__":
     print("✅ callbacks.py verified")
-    print("   Callbacks defined:")
-    print("   - update_globe (colour + projection)")
-    print("   - update_country_panel (country click)")
+    print("   - update_country_panel")
+    print("   - update_colour_mode")

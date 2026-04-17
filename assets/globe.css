@@ -1,0 +1,177 @@
+/* ============================================================
+   NDC Investment Dashboard
+   globe.css — D3 globe styles
+   ============================================================ */
+
+#globe-container {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+}
+
+#globe-svg {
+    cursor: grab;
+    display: block;
+}
+
+#globe-svg:active {
+    cursor: grabbing;
+}
+
+/* Country fills */
+.country {
+    fill: #1a1a1a;
+    stroke: #000000;
+    stroke-width: 0.3px;
+    transition: fill 0.2s ease;
+    cursor: pointer;
+}
+
+.country:hover {
+    stroke: #ffffff;
+    stroke-width: 0.8px;
+    filter: brightness(1.3);
+}
+
+.country.selected {
+    stroke: #00c896;
+    stroke-width: 1.2px;
+}
+
+/* Graticule lines */
+.graticule {
+    fill: none;
+    stroke: #1a1a1a;
+    stroke-width: 0.5px;
+}
+
+/* Globe sphere background */
+.sphere {
+    fill: #050505;
+}
+
+/* Globe outer glow */
+.globe-glow {
+    fill: none;
+    stroke: #2a2a2a;
+    stroke-width: 1px;
+}
+
+/* Country panel overlay */
+#country-panel-overlay {
+    position: fixed;
+    top: 52px;
+    right: 0;
+    width: 400px;
+    height: calc(100vh - 52px);
+    background-color: #111111;
+    border-left: 1px solid #2a2a2a;
+    z-index: 100;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#country-panel-overlay.open {
+    transform: translateX(0);
+}
+
+/* KPI strip */
+#kpi-strip {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background-color: #111111;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+/* Controls bar */
+#globe-controls {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    background-color: rgba(17,17,17,0.9);
+    border: 1px solid #2a2a2a;
+    border-radius: 24px;
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    backdrop-filter: blur(8px);
+}
+
+/* Tooltip */
+#globe-tooltip {
+    position: fixed;
+    background-color: rgba(17,17,17,0.95);
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+    color: #f0f0f0;
+    pointer-events: none;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    max-width: 220px;
+    line-height: 1.6;
+}
+
+#globe-tooltip.visible {
+    opacity: 1;
+}
+
+/* Scroll indicator */
+#scroll-hint {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    color: #555555;
+    font-family: Inter, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-align: center;
+    animation: fadeInUp 2s ease forwards;
+    animation-delay: 1s;
+    opacity: 0;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Analytics section */
+#analytics-section {
+    position: relative;
+    z-index: 10;
+    background-color: #0a0a0a;
+    border-top: 1px solid #2a2a2a;
+    margin-top: 100vh;
+}
+
+/* Auto-rotate fade hint */
+.rotate-hint {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255,255,255,0.04);
+    font-family: Inter, sans-serif;
+    font-size: 180px;
+    font-weight: 700;
+    pointer-events: none;
+    z-index: 0;
+    letter-spacing: -8px;
+}

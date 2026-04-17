@@ -1,0 +1,15 @@
+/* ============================================================
+   NDC Investment Dashboard
+   grid.css — Background grid pattern
+   ============================================================ */
+
+.grid-background {
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(to right,  rgba(42,42,42,0.4) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(42,42,42,0.4) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+}

@@ -98,7 +98,7 @@ TERMINOLOGY = [
             "and GDP per capita. Tier 1 indicates established markets. "
             "Tier 2 indicates emerging markets with growing climate "
             "finance activity. Tier 3 indicates frontier markets with "
-            "high conditional finance need and higher risk profiles."
+            "high conditional finance need and elevated risk profiles."
         ),
         "colour"    : C["amber"],
     },
@@ -106,7 +106,7 @@ TERMINOLOGY = [
         "term"      : "ND-GAIN Score",
         "full"      : "Notre Dame Global Adaptation Initiative",
         "definition": (
-            "Scores countries from 0 to 100 across two dimensions — "
+            "Scores countries from 0 to 100 across two dimensions: "
             "vulnerability to climate change and readiness to leverage "
             "investment for adaptation. Higher scores indicate greater "
             "resilience and institutional capacity."
@@ -129,9 +129,9 @@ TERMINOLOGY = [
         "term"      : "Sector Tag",
         "full"      : "Investment Sector Classification",
         "definition": (
-            "When an NDC references a specific investment sector — "
+            "When an NDC references a specific investment sector such as "
             "Energy, Transport, Land and Agriculture, Water, Built "
-            "Environment, Industry or Nature-Based Solutions — the tool "
+            "Environment, Industry or Nature-Based Solutions, the tool "
             "assigns a sector tag. Each tag carries dimension flags "
             "indicating mitigation or adaptation focus and the implied "
             "financing instrument."
@@ -542,7 +542,7 @@ def layout():
                         "fontFamily" : "Inter, sans-serif",
                     })
                 ], style={"marginBottom": "12px" if n < 4 else "0"})
-                for n, step in [
+for n, step in [
                     (1, "Open the Dashboard and explore the interactive "
                         "globe. Countries are colour-coded by investment "
                         "tier by default."),
@@ -554,10 +554,9 @@ def layout():
                         "score, climate vulnerability and renewable "
                         "energy share."),
                     (4, "Scroll below the globe to view global analytics "
-                        "— sector coverage, tier distribution and "
+                        "covering sector coverage, tier distribution and "
                         "commitment type breakdown across all NDCs."),
-                ]
-            ], style={
+                ]            ], style={
                 "backgroundColor" : C["surface_high"],
                 "border"          : f"1px solid {C['border']}",
                 "borderLeft"      : f"2px solid {C['emerald']}",
