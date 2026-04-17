@@ -812,3 +812,112 @@ def get_country_projects_top3(iso_code, projects_df=None):
         df["approval_date"], errors="coerce"
     )
     return df.sort_values("approval_date", ascending=False).head(3)
+
+
+# ============================================================
+# COMPOSITE INVESTMENT BENCHMARK
+# Normalised 0-100 score across six metrics
+# Used in Tier 3 comparable markets section
+# ============================================================
+
+def compute_benchmark_scores(master_df):
+    """
+    Computes a composite investment benchmark score (0-100)
+    for every country. Weights:
+      Readiness Score       30%
+      GDP per Capita        25%
+      Renewable %           20%
+      Vulnerability (inv.)  15%
+      WB Project Count       5%
+      Conditional Uplift     5% (inverted — higher = more dependent)
+    Countries missing a metric receive the median for that metric.
+    """
+    df = master_df.copy()
+
+    def norm(series, invert=False):
+        """Normalise a series to 0-1, fill nulls with median."""
+        filled = series.fillna(series.median())
+        mn, mx = filled.min(), filled.max()
+        if mx == mn:
+            return pd.Series([0.5] * len(filled), index=filled.index)
+        scaled = (filled - mn) / (mx - mn)
+        return 1 - scaled if invert else scaled
+
+    df["_r_readiness"]   = norm(df["readiness_score"])
+    df["_r_gdp"]         = norm(df["gdp_per_capita_usd"])
+    df["_r_renewable"]   = norm(df["renewable_electricity_pct"])
+    df["_r_vuln"]        = norm(df["vulnerability_score"], invert=True)
+    df["_r_wb"]          = norm(df["wb_project_count"])
+    df["_r_cond"]        = norm(df["conditional_pct_uplift"], invert=True)
+
+    df["benchmark_score"] = (
+        df["_r_readiness"] * 0.30 +
+        df["_r_gdp"]       * 0.25 +
+        df["_r_renewable"] * 0.20 +
+        df["_r_vuln"]      * 0.15 +
+        df["_r_wb"]        * 0.05 +
+        df["_r_cond"]      * 0.05
+    ) * 100
+
+    # Drop working columns
+    drop_cols = [c for c in df.columns if c.startswith("_r_")]
+    df = df.drop(columns=drop_cols)
+
+    return df[["iso_code", "benchmark_score"]]
+
+
+# Build cache at import
+try:
+    _master_with_benchmark = load_master()
+    _benchmark_df          = compute_benchmark_scores(_master_with_benchmark)
+    _benchmark_lookup      = dict(
+        zip(_benchmark_df["iso_code"],
+            _benchmark_df["benchmark_score"])
+    )
+    print(f"   Benchmark scores : {len(_benchmark_lookup)} countries computed")
+except Exception as e:
+    _benchmark_lookup = {}
+    print(f"   Benchmark scores : failed ({e})")
+
+
+def get_benchmark_score(iso_code):
+    """Returns the composite benchmark score for a country."""
+    return _benchmark_lookup.get(iso_code)
+
+
+def get_comparable_markets_benchmark(iso_code, sector_name,
+                                     master_df, tags_df, n=6):
+    """
+    Returns comparable markets with full benchmark data.
+    Same investment tier, same sector tag, ranked by benchmark score.
+    """
+    country_row = master_df[master_df["iso_code"] == iso_code]
+    if country_row.empty:
+        return pd.DataFrame()
+
+    tier = country_row.iloc[0].get("investment_tier", "")
+
+    sector_isos = set(
+        tags_df[tags_df["sector"] == sector_name]["iso_code"].unique()
+    )
+
+    # Exclude microstates, collective submissions and closed economies
+    EXCLUDE = {"EUU", "PRK", "CUB", "SYR", "ERI"}
+
+    comparables = master_df[
+        (master_df["iso_code"].isin(sector_isos)) &
+        (master_df["investment_tier"] == tier) &
+        (master_df["iso_code"] != iso_code) &
+        (master_df["population"].fillna(0) > 500000) &
+        (~master_df["iso_code"].isin(EXCLUDE))
+    ].copy()
+
+    comparables["benchmark_score"] = comparables["iso_code"].map(
+        _benchmark_lookup
+    )
+
+    comparables = comparables.sort_values(
+        "benchmark_score", ascending=False
+    ).head(n)
+
+    return comparables

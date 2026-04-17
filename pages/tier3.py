@@ -13,7 +13,9 @@ from components import (confidence_badge, sector_pill,
                         data_row, flag_pill)
 from data import (load_master, load_tags, load_projects,
                   get_country_name, clean_ndc_text,
-                  get_country_projects_top3)
+                  get_country_projects_top3,
+                  get_comparable_markets_benchmark,
+                  get_benchmark_score)
 
 master_df   = load_master()
 tags_df     = load_tags()
@@ -98,36 +100,6 @@ SECTOR_DESCRIPTIONS = {
 # ============================================================
 # COMPARABLE MARKETS
 # ============================================================
-
-def get_comparable_markets(iso_code, sector_name, n=5):
-    """
-    Returns countries with similar sector signals
-    in the same investment tier. Excludes the selected country.
-    """
-    country_row = master_df[master_df["iso_code"] == iso_code]
-    if country_row.empty:
-        return pd.DataFrame()
-
-    tier = country_row.iloc[0].get("investment_tier", "")
-
-    # Countries with same sector tag
-    sector_countries = tags_df[
-        tags_df["sector"] == sector_name
-    ]["iso_code"].unique()
-
-    # Filter to same tier, exclude self
-    comparables = master_df[
-        (master_df["iso_code"].isin(sector_countries)) &
-        (master_df["investment_tier"] == tier) &
-        (master_df["iso_code"] != iso_code)
-    ].copy()
-
-    # Sort by ND-GAIN score descending
-    comparables = comparables.sort_values(
-        "ndgain_score", ascending=False
-    ).head(n)
-
-    return comparables
 
 
 def get_sector_projects(iso_code, sector_name):
@@ -478,46 +450,159 @@ def tier3_content(iso_code, sector_name):
     })
 
     # ── Section 4: Comparable Markets ───────────────────────
-    comparables = get_comparable_markets(iso_code, sector_name)
+    comparables = get_comparable_markets_benchmark(
+        iso_code, sector_name, master_df, tags_df
+    )
+
+    # Get selected country benchmark for context
+    this_score = get_benchmark_score(iso_code)
 
     if not comparables.empty:
-        comp_rows = []
+        # Table header
+        header_row = html.Div([
+            html.Span("#", style={
+                "width": "20px", "fontSize": "10px",
+                "color": C["text_muted"], "fontFamily": "Inter, sans-serif",
+                "flexShrink": "0",
+            }),
+            html.Span("Country", style={
+                "flex": "1", "fontSize": "10px",
+                "color": C["text_muted"], "fontFamily": "Inter, sans-serif",
+                "fontWeight": "600", "textTransform": "uppercase",
+                "letterSpacing": "1px",
+            }),
+            html.Span("Benchmark", style={
+                "width": "72px", "fontSize": "10px",
+                "color": C["text_muted"], "fontFamily": "Inter, sans-serif",
+                "fontWeight": "600", "textTransform": "uppercase",
+                "letterSpacing": "1px", "textAlign": "right",
+            }),
+            html.Span("Renewable", style={
+                "width": "72px", "fontSize": "10px",
+                "color": C["text_muted"], "fontFamily": "Inter, sans-serif",
+                "fontWeight": "600", "textTransform": "uppercase",
+                "letterSpacing": "1px", "textAlign": "right",
+            }),
+            html.Span("Readiness", style={
+                "width": "72px", "fontSize": "10px",
+                "color": C["text_muted"], "fontFamily": "Inter, sans-serif",
+                "fontWeight": "600", "textTransform": "uppercase",
+                "letterSpacing": "1px", "textAlign": "right",
+            }),
+        ], style={
+            "display": "flex", "alignItems": "center",
+            "gap": "8px", "padding": "0 0 8px 0",
+            "borderBottom": f"2px solid {C['border']}",
+            "marginBottom": "4px",
+        })
+
+        comp_rows = [header_row]
+
+        # Selected country row first for context
+        if this_score:
+            this_row = master_df[master_df["iso_code"] == iso_code]
+            if not this_row.empty:
+                r = this_row.iloc[0]
+                renew = (f"{r['renewable_electricity_pct']:.0f}%"
+                         if pd.notna(r.get("renewable_electricity_pct"))
+                         else "N/A")
+                ready = (f"{r['readiness_score']:.2f}"
+                         if pd.notna(r.get("readiness_score"))
+                         else "N/A")
+                comp_rows.append(html.Div([
+                    html.Span("—", style={
+                        "width": "20px", "fontSize": "11px",
+                        "color": C["emerald"], "fontFamily": "Inter, sans-serif",
+                        "flexShrink": "0",
+                    }),
+                    html.Span(
+                        f"{get_country_name(iso_code)} (selected)",
+                        style={
+                            "flex": "1", "fontSize": "12px",
+                            "color": C["emerald"], "fontFamily": "Inter, sans-serif",
+                            "fontWeight": "600",
+                        }
+                    ),
+                    html.Span(f"{this_score:.1f}", style={
+                        "width": "72px", "fontSize": "12px",
+                        "color": C["emerald"], "fontFamily": "Inter, sans-serif",
+                        "fontWeight": "700", "textAlign": "right",
+                    }),
+                    html.Span(renew, style={
+                        "width": "72px", "fontSize": "12px",
+                        "color": C["text_secondary"], "fontFamily": "Inter, sans-serif",
+                        "textAlign": "right",
+                    }),
+                    html.Span(ready, style={
+                        "width": "72px", "fontSize": "12px",
+                        "color": C["text_secondary"], "fontFamily": "Inter, sans-serif",
+                        "textAlign": "right",
+                    }),
+                ], style={
+                    "display": "flex", "alignItems": "center",
+                    "gap": "8px", "padding": "7px 0",
+                    "borderBottom": f"1px solid {C['border']}",
+                    "backgroundColor": C["emerald"] + "08",
+                }))
+
+        # Comparable rows
         for i, (_, row) in enumerate(comparables.iterrows()):
-            cname   = get_country_name(row["iso_code"])
-            ndgain  = (f"{row['ndgain_score']:.1f}"
-                       if pd.notna(row.get("ndgain_score"))
-                       else "N/A")
-            renew   = (f"{row['renewable_electricity_pct']:.0f}%"
-                       if pd.notna(row.get("renewable_electricity_pct"))
-                       else "N/A")
+            cname  = get_country_name(row["iso_code"])
+            score  = row.get("benchmark_score")
+            renew  = (f"{row['renewable_electricity_pct']:.0f}%"
+                      if pd.notna(row.get("renewable_electricity_pct"))
+                      else "N/A")
+            ready  = (f"{row['readiness_score']:.2f}"
+                      if pd.notna(row.get("readiness_score"))
+                      else "N/A")
+            score_str = f"{score:.1f}" if pd.notna(score) else "N/A"
 
             comp_rows.append(html.Div([
                 html.Span(f"{i+1}", style={
-                    "width"     : "20px",
-                    "fontSize"  : "11px",
-                    "color"     : C["text_muted"],
-                    "fontFamily": "Inter, sans-serif",
-                    "fontWeight": "600",
-                    "flexShrink": "0",
+                    "width": "20px", "fontSize": "11px",
+                    "color": C["text_muted"], "fontFamily": "Inter, sans-serif",
+                    "fontWeight": "600", "flexShrink": "0",
                 }),
                 html.Span(cname, style={
-                    "flex"      : "1",
-                    "fontSize"  : "12px",
-                    "color"     : C["text"],
-                    "fontFamily": "Inter, sans-serif",
+                    "flex": "1", "fontSize": "12px",
+                    "color": C["text"], "fontFamily": "Inter, sans-serif",
                 }),
-                html.Span(f"ND-GAIN {ndgain}", style={
-                    "fontSize"   : "10px",
-                    "color"      : C["text_muted"],
-                    "fontFamily" : "Inter, sans-serif",
+                html.Span(score_str, style={
+                    "width": "72px", "fontSize": "12px",
+                    "color": C["amber"], "fontFamily": "Inter, sans-serif",
+                    "fontWeight": "600", "textAlign": "right",
+                }),
+                html.Span(renew, style={
+                    "width": "72px", "fontSize": "12px",
+                    "color": C["text_secondary"], "fontFamily": "Inter, sans-serif",
+                    "textAlign": "right",
+                }),
+                html.Span(ready, style={
+                    "width": "72px", "fontSize": "12px",
+                    "color": C["text_secondary"], "fontFamily": "Inter, sans-serif",
+                    "textAlign": "right",
                 }),
             ], style={
-                "display"      : "flex",
-                "alignItems"   : "center",
-                "gap"          : "8px",
-                "padding"      : "6px 0",
-                "borderBottom" : f"1px solid {C['border']}",
+                "display": "flex", "alignItems": "center",
+                "gap": "8px", "padding": "7px 0",
+                "borderBottom": f"1px solid {C['border']}",
             }))
+
+        # Benchmark explanation
+        explanation = html.Div(
+            "Benchmark score (0-100) is a weighted composite: "
+            "Readiness 30%, GDP per capita 25%, Renewable share 20%, "
+            "Vulnerability 15%, MDB engagement 5%, Finance dependency 5%. "
+            "All metrics normalised. Higher score = stronger investment readiness.",
+            style={
+                "fontSize"  : "10px",
+                "color"     : C["text_muted"],
+                "fontFamily": "Inter, sans-serif",
+                "lineHeight": "1.5",
+                "marginTop" : "10px",
+                "fontStyle" : "italic",
+            }
+        )
 
         comp_section = html.Div([
             html.Div("Comparable Markets", style={
@@ -530,8 +615,9 @@ def tier3_content(iso_code, sector_name):
                 "marginBottom"  : "6px",
             }),
             html.Div(
-                f"Same investment tier countries with {sector_name} "
-                f"NDC signals, ranked by ND-GAIN readiness.",
+                f"Same investment tier countries with active "
+                f"{sector_name} NDC signals, ranked by composite "
+                f"investment readiness benchmark.",
                 style={
                     "fontSize"     : "11px",
                     "color"        : C["text_muted"],
@@ -541,6 +627,7 @@ def tier3_content(iso_code, sector_name):
                 }
             ),
             html.Div(comp_rows),
+            explanation,
         ], style={
             "backgroundColor" : C["surface_high"],
             "border"          : f"1px solid {C['border']}",
@@ -549,7 +636,32 @@ def tier3_content(iso_code, sector_name):
             "marginBottom"    : "20px",
         })
     else:
-        comp_section = html.Div()
+        comp_section = html.Div([
+            html.Div("Comparable Markets", style={
+                "fontSize"      : "11px",
+                "fontWeight"    : "600",
+                "textTransform" : "uppercase",
+                "letterSpacing" : "1.5px",
+                "color"         : C["text_muted"],
+                "fontFamily"    : "Inter, sans-serif",
+                "marginBottom"  : "8px",
+            }),
+            html.Div(
+                "No comparable markets found in the same investment "
+                "tier with this sector tag.",
+                style={
+                    "fontSize"  : "12px",
+                    "color"     : C["text_muted"],
+                    "fontFamily": "Inter, sans-serif",
+                }
+            )
+        ], style={
+            "backgroundColor" : C["surface_high"],
+            "border"          : f"1px solid {C['border']}",
+            "borderRadius"    : "4px",
+            "padding"         : "14px",
+            "marginBottom"    : "20px",
+        })
 
     # ── Section 5: News and Policy ───────────────────────────
     news_section = html.Div([
