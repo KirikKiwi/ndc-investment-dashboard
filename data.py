@@ -403,3 +403,163 @@ if __name__ == "__main__":
     for _, row in test.iterrows():
         cleaned = clean_ndc_text(row["value"])
         print(f"   {row['iso_code']}: {cleaned[:120]}")
+
+# ============================================================
+# REGIONAL MDB MAPPING
+# Maps ISO codes to primary regional MDB
+# Used in country card project section
+# ============================================================
+
+REGIONAL_MDB = {
+    # African Development Bank
+    "DZA":"AfDB","AGO":"AfDB","BEN":"AfDB","BWA":"AfDB",
+    "BFA":"AfDB","BDI":"AfDB","CMR":"AfDB","CPV":"AfDB",
+    "CAF":"AfDB","TCD":"AfDB","COM":"AfDB","COD":"AfDB",
+    "COG":"AfDB","CIV":"AfDB","DJI":"AfDB","EGY":"AfDB",
+    "GNQ":"AfDB","ERI":"AfDB","ETH":"AfDB","GAB":"AfDB",
+    "GMB":"AfDB","GHA":"AfDB","GIN":"AfDB","GNB":"AfDB",
+    "KEN":"AfDB","LSO":"AfDB","LBR":"AfDB","LBY":"AfDB",
+    "MDG":"AfDB","MWI":"AfDB","MLI":"AfDB","MRT":"AfDB",
+    "MUS":"AfDB","MAR":"AfDB","MOZ":"AfDB","NAM":"AfDB",
+    "NER":"AfDB","NGA":"AfDB","RWA":"AfDB","STP":"AfDB",
+    "SEN":"AfDB","SLE":"AfDB","SOM":"AfDB","ZAF":"AfDB",
+    "SDN":"AfDB","SWZ":"AfDB","TZA":"AfDB","TGO":"AfDB",
+    "TUN":"AfDB","UGA":"AfDB","ZMB":"AfDB","ZWE":"AfDB",
+    # Asian Development Bank
+    "AFG":"ADB","ARM":"ADB","AZE":"ADB","BGD":"ADB",
+    "BHR":"ADB","BTN":"ADB","BRN":"ADB","KHM":"ADB",
+    "CHN":"ADB","COK":"ADB","FJI":"ADB","GEO":"ADB",
+    "IND":"ADB","IDN":"ADB","KAZ":"ADB","KIR":"ADB",
+    "KGZ":"ADB","LAO":"ADB","MYS":"ADB","MDV":"ADB",
+    "MHL":"ADB","FSM":"ADB","MNG":"ADB","MMR":"ADB",
+    "NPL":"ADB","PAK":"ADB","PLW":"ADB","PNG":"ADB",
+    "PHL":"ADB","SLB":"ADB","LKA":"ADB","TJK":"ADB",
+    "THA":"ADB","TLS":"ADB","TON":"ADB","TKM":"ADB",
+    "TUV":"ADB","UZB":"ADB","VUT":"ADB","VNM":"ADB",
+    "WSM":"ADB",
+    # Inter-American Development Bank
+    "ARG":"IDB","BLZ":"IDB","BOL":"IDB","BRA":"IDB",
+    "CHL":"IDB","COL":"IDB","CRI":"IDB","CUB":"IDB",
+    "DOM":"IDB","ECU":"IDB","SLV":"IDB","GTM":"IDB",
+    "GUY":"IDB","HTI":"IDB","HND":"IDB","JAM":"IDB",
+    "MEX":"IDB","NIC":"IDB","PAN":"IDB","PRY":"IDB",
+    "PER":"IDB","SUR":"IDB","TTO":"IDB","URY":"IDB",
+    "VEN":"IDB",
+    # Caribbean Development Bank
+    "ATG":"CDB","BHS":"CDB","BRB":"CDB","DMA":"CDB",
+    "GRD":"CDB","KNA":"CDB","LCA":"CDB","VCT":"CDB",
+    # EBRD
+    "ALB":"EBRD","BLR":"EBRD","BIH":"EBRD","BGR":"EBRD",
+    "HRV":"EBRD","CYP":"EBRD","CZE":"EBRD","EST":"EBRD",
+    "HUN":"EBRD","JOR":"EBRD","LVA":"EBRD","LBN":"EBRD",
+    "LTU":"EBRD","MKD":"EBRD","MDA":"EBRD","MNE":"EBRD",
+    "MAR":"EBRD","POL":"EBRD","ROU":"EBRD","RUS":"EBRD",
+    "SRB":"EBRD","SVK":"EBRD","SVN":"EBRD","TJK":"EBRD",
+    "TUN":"EBRD","TUR":"EBRD","UKR":"EBRD","UZB":"EBRD",
+    # European Investment Bank (high income Europe)
+    "AUT":"EIB","BEL":"EIB","DNK":"EIB","FIN":"EIB",
+    "FRA":"EIB","DEU":"EIB","GRC":"EIB","IRL":"EIB",
+    "ITA":"EIB","LUX":"EIB","MLT":"EIB","NLD":"EIB",
+    "PRT":"EIB","ESP":"EIB","SWE":"EIB","GBR":"EIB",
+    # No concessional MDB (high income non-European)
+    "AUS":"None","CAN":"None","ISL":"None","ISR":"None",
+    "JPN":"None","KOR":"None","NZL":"None","NOR":"None",
+    "SGP":"None","CHE":"None","USA":"None",
+    # Islamic Development Bank supplement
+    "IRN":"IsDB","IRQ":"IsDB","KWT":"IsDB","LBY":"IsDB",
+    "MRT":"IsDB","OMN":"IsDB","PAK":"IsDB","QAT":"IsDB",
+    "SAU":"IsDB","SOM":"IsDB","SDN":"IsDB","SYR":"IsDB",
+    "TUN":"IsDB","YEM":"IsDB",
+}
+
+MDB_FULL_NAMES = {
+    "AfDB" : "African Development Bank",
+    "ADB"  : "Asian Development Bank",
+    "IDB"  : "Inter-American Development Bank",
+    "CDB"  : "Caribbean Development Bank",
+    "EBRD" : "European Bank for Reconstruction and Development",
+    "EIB"  : "European Investment Bank",
+    "IsDB" : "Islamic Development Bank",
+    "None" : "No concessional MDB lending",
+}
+
+
+def get_regional_mdb(iso_code):
+    """Returns the primary regional MDB for a country."""
+    mdb_code = REGIONAL_MDB.get(iso_code, "World Bank")
+    return mdb_code, MDB_FULL_NAMES.get(mdb_code, mdb_code)
+
+
+def get_country_projects_top3(iso_code, projects_df):
+    """
+    Returns top 3 most recent World Bank climate projects
+    for a given country, sorted by approval date descending.
+    """
+    df = get_country_projects(iso_code, projects_df)
+    if df.empty:
+        return df
+    df = df.copy()
+    df["approval_date"] = pd.to_datetime(
+        df["approval_date"], errors="coerce"
+    )
+    df = df.sort_values("approval_date", ascending=False)
+    return df.head(3)
+
+
+# ============================================================
+# PRE-COMPUTED PROJECT ISO LOOKUP
+# Runs once at import — avoids pycountry on every click
+# ============================================================
+
+def _build_project_iso_cache(projects_df):
+    """
+    Pre-computes ISO codes for all projects at startup.
+    Returns a dataframe with iso_code column added.
+    """
+    import pycountry
+
+    def extract_name(val):
+        try:
+            parsed = json.loads(val)
+            return parsed[0] if isinstance(parsed, list) and parsed else val
+        except Exception:
+            return val
+
+    def to_iso(name):
+        try:
+            return pycountry.countries.search_fuzzy(name)[0].alpha_3
+        except Exception:
+            return None
+
+    df = projects_df.copy()
+    df["country_clean"] = df["country_name"].apply(extract_name)
+    df["iso_code"]      = df["country_clean"].apply(to_iso)
+    return df
+
+
+# Build cache once at import
+try:
+    _raw_projects      = load_projects()
+    PROJECTS_WITH_ISO  = _build_project_iso_cache(_raw_projects)
+    print(f"   Project ISO cache: {PROJECTS_WITH_ISO['iso_code'].notna().sum()} matched")
+except Exception as e:
+    PROJECTS_WITH_ISO  = pd.DataFrame()
+    print(f"   Project ISO cache: failed ({e})")
+
+
+def get_country_projects_top3(iso_code, projects_df=None):
+    """
+    Returns top 3 most recent World Bank climate projects
+    for a given country using pre-computed ISO cache.
+    """
+    df = PROJECTS_WITH_ISO[
+        PROJECTS_WITH_ISO["iso_code"] == iso_code
+    ].copy()
+
+    if df.empty:
+        return df
+
+    df["approval_date"] = pd.to_datetime(
+        df["approval_date"], errors="coerce"
+    )
+    return df.sort_values("approval_date", ascending=False).head(3)
