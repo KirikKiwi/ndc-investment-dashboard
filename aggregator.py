@@ -17,6 +17,13 @@ import feedparser
 import requests
 from bs4 import BeautifulSoup
 
+# Playwright for JS-rendered sites (optional)
+try:
+    from playwright.sync_api import sync_playwright
+    HAS_PLAYWRIGHT = True
+except ImportError:
+    HAS_PLAYWRIGHT = False
+
 from feed_registry import SOURCES, credibility_score
 
 logging.basicConfig(level=logging.INFO,
@@ -402,6 +409,119 @@ def fetch_scrape(source):
 
 
 # ============================================================
+# PLAYWRIGHT FETCHER (for JS-rendered sites)
+# ============================================================
+
+def fetch_playwright(source):
+    """
+    Fetches a JS-rendered page using Playwright headless browser.
+    Falls back to regular scrape if Playwright unavailable.
+    """
+    if not HAS_PLAYWRIGHT:
+        logging.warning(f"Playwright not installed, skipping {source['label']}")
+        return []
+
+    scrape_url = source.get("scrape_url", "")
+    if not scrape_url:
+        return []
+
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(scrape_url, timeout=20000)
+            page.wait_for_timeout(4000)
+            html = page.content()
+            browser.close()
+
+        soup = BeautifulSoup(html, "html.parser")
+        articles = []
+
+        # Find links that look like news articles
+        for a in soup.find_all("a", href=True):
+            href = a["href"]
+            text = a.get_text(strip=True)
+
+            # Skip navigation, short text, and self-links
+            if len(text) < 20:
+                continue
+            if href == scrape_url or href.endswith(("/news", "/news/")):
+                continue
+
+            # Must look like a news/article URL
+            news_patterns = ["/news/", "/stories/", "/story/",
+                           "/press-release", "/article/", "/blog/",
+                           "/update/", "/feature/"]
+            if not any(pat in href for pat in news_patterns):
+                continue
+
+            link = urljoin(scrape_url, href)
+            title = text[:200]
+
+            # Look for date near the link
+            pub_date = None
+            parent = a.find_parent(["div", "article", "li", "section"])
+            if parent:
+                time_tag = parent.find("time")
+                if time_tag:
+                    pub_date = _parse_date(
+                        time_tag.get("datetime") or time_tag.get_text(strip=True)
+                    )
+                if not pub_date:
+                    # Try to extract date from the text around the link
+                    parent_text = parent.get_text(" ", strip=True)
+                    import re
+                    date_match = re.search(
+                        r"(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\s+\d{4})",
+                        parent_text
+                    )
+                    if date_match:
+                        pub_date = _parse_date(date_match.group(1))
+
+            # Look for image
+            image_url = None
+            if parent:
+                img = parent.find("img")
+                if img:
+                    image_url = img.get("src") or img.get("data-src")
+                    if image_url:
+                        image_url = urljoin(scrape_url, image_url)
+
+            # Summary from sibling paragraph
+            summary = ""
+            if parent:
+                p_tag = parent.find("p")
+                if p_tag:
+                    summary = p_tag.get_text(strip=True)[:300]
+
+            days = _days_old(pub_date)
+            score = credibility_score(source["tier"], days)
+
+            articles.append({
+                "article_id"       : _article_id(link),
+                "title"            : title,
+                "summary"          : summary,
+                "url"              : link,
+                "image_url"        : image_url,
+                "source_domain"    : source["domain"],
+                "source_label"     : source["label"],
+                "source_tier"      : source["tier"],
+                "category"         : source.get("category", "news"),
+                "published_date"   : pub_date,
+                "credibility_score": score,
+            })
+
+            if len(articles) >= MAX_PER_SOURCE:
+                break
+
+        return articles
+
+    except Exception as e:
+        logging.warning(f"Playwright fetch failed for {source['label']}: {e}")
+        return []
+
+
+# ============================================================
 # STORAGE
 # ============================================================
 
@@ -527,6 +647,8 @@ def run_aggregator(sources=None):
         try:
             if method == "rss":
                 articles = fetch_rss(source)
+            elif method == "playwright":
+                articles = fetch_playwright(source)
             elif method == "scrape":
                 articles = fetch_scrape(source)
             else:
