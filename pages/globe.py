@@ -22,6 +22,7 @@ from data import (load_master, load_tags, load_projects,
                   get_finance_context, get_territory_note)
 from aggregator import get_articles_for_country
 from wgi import get_governance
+from oecd_rio import get_climate_finance
 from news_render import render_news_feed
 
 master_df   = load_master()
@@ -760,6 +761,102 @@ def country_panel_content(iso_code):
     else:
         governance_section = html.Div()
 
+    # ── SECTION 5c: Climate Finance (OECD Rio Markers) ──
+    cf = get_climate_finance(iso_code)
+    if cf and cf.get("total_latest", 0) > 0:
+        def fmt_m(v):
+            """Format millions USD."""
+            if not v or v == 0: return "$0"
+            if v >= 1000: return f"${v/1000:.1f}B"
+            if v >= 1: return f"${v:.0f}M"
+            return f"${v*1000:.0f}K"
+
+        # Build yearly trend
+        years = sorted(cf.get("yearly", {}).keys())
+        trend_items = []
+        for yr in years:
+            yd = cf["yearly"][yr]
+            total = yd.get("mitigation", 0) + yd.get("adaptation", 0)
+            trend_items.append(
+                html.Span([
+                    html.Span(str(yr), style={
+                        "fontSize": "10px", "color": C["text_muted"],
+                        "fontFamily": "Inter, sans-serif",
+                    }),
+                    html.Span(f" {fmt_m(total)}", style={
+                        "fontSize": "10px", "color": C["text_secondary"],
+                        "fontFamily": "Inter, sans-serif",
+                        "fontWeight": "600",
+                    }),
+                ], style={"marginRight": "10px"})
+            )
+
+        mit_pct = (cf["mitigation"] / cf["total_latest"] * 100
+                   if cf["total_latest"] > 0 else 0)
+        ada_pct = 100 - mit_pct
+
+        climate_finance_section = html.Div([
+            section_title("Climate Finance Flows", tooltip=(
+                "OECD Rio Markers: bilateral ODA commitments tagged as "
+                "climate mitigation or adaptation. Values in USD millions. "
+                "Includes both 'principal' and 'significant' objectives. "
+                f"Latest data: {cf.get('latest_year', 'N/A')}."
+            )),
+            html.Div([
+                html.Div([
+                    data_row("Mitigation",
+                        fmt_m(cf["mitigation"]),
+                        colour=C["emerald"]),
+                    data_row("Adaptation",
+                        fmt_m(cf["adaptation"]),
+                        colour=C["cobalt"]),
+                ], style={"flex": "1"}),
+                html.Div([
+                    data_row("Total (latest year)",
+                        fmt_m(cf["total_latest"]),
+                        colour=C["text"]),
+                    data_row("Cumulative",
+                        fmt_m(cf.get("grand_total", 0)),
+                        colour=C["text_secondary"]),
+                ], style={"flex": "1"}),
+            ], style={"display": "flex", "gap": "16px"}),
+            # Mitigation/Adaptation bar
+            html.Div([
+                html.Div(style={
+                    "width": f"{mit_pct:.0f}%",
+                    "height": "4px",
+                    "backgroundColor": C["emerald"],
+                    "borderRadius": "2px 0 0 2px",
+                }),
+                html.Div(style={
+                    "width": f"{ada_pct:.0f}%",
+                    "height": "4px",
+                    "backgroundColor": C["cobalt"],
+                    "borderRadius": "0 2px 2px 0",
+                }),
+            ], style={
+                "display": "flex", "marginTop": "8px",
+                "marginBottom": "6px",
+            }),
+            html.Div([
+                html.Span(f"Mitigation {mit_pct:.0f}%", style={
+                    "fontSize": "10px", "color": C["emerald"],
+                    "fontFamily": "Inter, sans-serif", "marginRight": "12px",
+                }),
+                html.Span(f"Adaptation {ada_pct:.0f}%", style={
+                    "fontSize": "10px", "color": C["cobalt"],
+                    "fontFamily": "Inter, sans-serif",
+                }),
+            ]),
+            # Trend line
+            html.Div(trend_items, style={
+                "marginTop": "10px",
+                "display": "flex", "flexWrap": "wrap",
+            }) if trend_items else html.Div(),
+        ], style={"marginBottom": "16px"})
+    else:
+        climate_finance_section = html.Div()
+
     # ── SECTION 6: MDB Project Pipeline ─────────────────
     proj_count  = country_data.get("wb_project_count", 0)
     proj_active = country_data.get("wb_active_projects", 0)
@@ -919,6 +1016,7 @@ def country_panel_content(iso_code):
         signals_section,
         metrics,
         governance_section,
+        climate_finance_section,
         projects_section,
         news_section,
         subsidies_section,
