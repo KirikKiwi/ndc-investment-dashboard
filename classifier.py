@@ -106,17 +106,22 @@ SHORT_NAMES = {"US", "UK", "EU", "UAE", "DRC", "CAR"}
 SECTOR_KEYWORDS = {
     "Energy": [
         "solar", "wind power", "wind energy", "wind farm",
-        "renewable energy", "renewables", "clean energy",
+        "wind project", "wind turbine",
+        "renewable energy", "renewables", "renewable power",
+        "clean energy", "clean power", "green energy",
         "hydropower", "geothermal", "biomass energy",
         "energy transition", "power generation", "electricity",
         "grid", "energy storage", "battery", "hydrogen",
-        "photovoltaic", "offshore wind", "onshore wind",
+        "photovoltaic", "polysilicon", "silicon wafer",
+        "offshore wind", "onshore wind",
         "energy access", "mini-grid", "microgrid",
         "power plant", "energy efficiency", "decarbonisation",
-        "decarbonization", "fossil fuel", "coal phase",
+        "decarbonization", "non-fossil", "fossil fuel",
+        "coal phase", "coal exit", "just transition",
         "natural gas", "LNG", "energy security",
         "power purchase agreement", "PPA", "feed-in tariff",
         "net metering", "IPP", "independent power producer",
+        "gigawatt", "megawatt", "GW", "MW",
     ],
     "Transport": [
         "electric vehicle", "EV", "e-mobility",
@@ -208,10 +213,16 @@ def _match_countries(text):
     return sorted(found)
 
 
+# Short sector keywords needing word boundary matching
+SHORT_SECTOR_KEYWORDS = {"EV", "BRT", "GW", "MW", "PPA", "IPP",
+                         "LNG", "CCS", "CCUS", "NbS", "ETS",
+                         "HVAC", "WASH", "REDD"}
+
 def _match_sectors(text):
     """
     Returns list of sector names found in text.
-    Matches any keyword from the sector keyword list.
+    Uses word boundary matching for short keywords
+    to avoid false positives (e.g. 'EV' inside 'Revealed').
     """
     if not text:
         return []
@@ -221,21 +232,80 @@ def _match_sectors(text):
 
     for sector, keywords in SECTOR_KEYWORDS.items():
         for kw in keywords:
-            if kw.lower() in text_lower:
-                found.add(sector)
-                break
+            if kw.upper() in SHORT_SECTOR_KEYWORDS:
+                pattern = r'\b' + re.escape(kw) + r'\b'
+                if re.search(pattern, text, re.IGNORECASE):
+                    found.add(sector)
+                    break
+            elif len(kw) <= 3:
+                pattern = r'\b' + re.escape(kw) + r'\b'
+                if re.search(pattern, text, re.IGNORECASE):
+                    found.add(sector)
+                    break
+            else:
+                if kw.lower() in text_lower:
+                    found.add(sector)
+                    break
 
     return sorted(found)
+
+
+# ============================================================
+# CLIMATE RELEVANCE GATE
+# Articles must contain at least one of these terms to be
+# tagged with a country. Prevents noise like "Afghanistan
+# girls education" from showing in country panels.
+# ============================================================
+
+CLIMATE_KEYWORDS = [
+    # Climate and environment
+    "climate", "emission", "carbon", "greenhouse", "GHG",
+    "paris agreement", "NDC", "net zero", "net-zero",
+    "decarboni", "warming", "adaptation", "mitigation",
+    "resilience", "COP2", "COP3",
+    # Energy and infrastructure
+    "energy", "power", "solar", "wind", "renewable",
+    "hydropower", "geothermal", "hydrogen", "battery",
+    "grid", "electricity", "fossil", "coal", "gas",
+    "nuclear", "turbine", "photovoltaic",
+    # Finance and investment
+    "invest", "financ", "fund", "capital", "bond",
+    "green bond", "blended", "concessional", "subsidy",
+    "incentive", "grant", "loan", "equity", "guarantee",
+    "project finance", "infrastructure",
+    "bankab", "creditworth",
+    # Policy
+    "policy", "regulation", "legislation", "framework",
+    "tariff", "tax credit", "carbon price", "carbon tax",
+    "ETS", "trading scheme",
+    # Sectors
+    "transport", "agriculture", "forestry", "deforestation",
+    "water", "waste", "circular economy", "biodiversity",
+    "conservation", "ecosystem", "industrial",
+    "construction", "building",
+]
+
+def _is_climate_relevant(text):
+    """Returns True if text contains climate/finance keywords."""
+    text_lower = text.lower()
+    return any(kw.lower() in text_lower for kw in CLIMATE_KEYWORDS)
 
 
 def classify_article(title, summary=""):
     """
     Returns (countries, sectors) for a single article.
+    Country tagging requires climate relevance gate.
     Both are lists of strings.
     """
     text = f"{title} {summary}"
-    countries = _match_countries(text)
     sectors   = _match_sectors(text)
+
+    # Only tag countries if article passes climate relevance gate
+    if _is_climate_relevant(text):
+        countries = _match_countries(text)
+    else:
+        countries = []
+
     return countries, sectors
 
 
