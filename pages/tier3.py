@@ -16,6 +16,8 @@ from data import (load_master, load_tags, load_projects,
                   get_country_projects_top3,
                   get_comparable_markets_benchmark,
                   get_benchmark_score)
+from aggregator import get_articles_for_sector
+from news_render import render_news_feed
 
 master_df   = load_master()
 tags_df     = load_tags()
@@ -663,32 +665,36 @@ def tier3_content(iso_code, sector_name):
             "marginBottom"    : "20px",
         })
 
-    # ── Section 5: News and Policy ───────────────────────────
+    # ── Section 5: News and Policy (from feed) ──────────────
+    sector_articles = get_articles_for_sector(
+        iso_code, sector_name, limit=5
+    )
     news_section = html.Div([
-        html.Div("News and Policy", style={
-            "fontSize"      : "11px",
-            "fontWeight"    : "600",
-            "textTransform" : "uppercase",
-            "letterSpacing" : "1.5px",
-            "color"         : C["text_muted"],
-            "fontFamily"    : "Inter, sans-serif",
-            "marginBottom"  : "12px",
-        }),
         html.Div([
-            _placeholder_block(
-                "Recent Sector News",
-                f"Latest climate investment news for {sector_name} "
-                f"in {country_name}. "
-                "Available via Google CSE in Sprint 3."
-            ),
-            _placeholder_block(
-                "Government Policy and Incentives",
-                f"Active subsidies, tax incentives and regulatory "
-                f"frameworks for {sector_name} in {country_name}. "
-                "Available via Google CSE in Sprint 3."
-            ),
-        ], style={"display": "flex", "flexDirection": "column",
-                  "gap": "12px"}),
+            html.Span("News and Policy", style={
+                "fontSize"      : "11px",
+                "fontWeight"    : "600",
+                "textTransform" : "uppercase",
+                "letterSpacing" : "1.5px",
+                "color"         : C["text_muted"],
+                "fontFamily"    : "Inter, sans-serif",
+            }),
+            html.Span([
+                "ⓘ",
+                html.Span(
+                    "Sources ranked by credibility tier: "
+                    "T1 = Wire services and specialist press (Reuters, Carbon Brief, PV Magazine). "
+                    "T2 = Institutional and multilateral (IEA, World Bank, UNEP). "
+                    "T3 = Regional press (Africa Report, Livemint, Nikkei Asia). "
+                    "Articles scored by source tier and recency.",
+                    className="info-tip-text"
+                )
+            ], className="info-tip")
+        ], style={"marginBottom": "12px"}),
+        render_news_feed(
+            sector_articles,
+            empty_message=f"No recent news for {sector_name} in {country_name}."
+        ),
     ], style={
         "backgroundColor" : C["surface_high"],
         "border"          : f"1px solid {C['border']}",

@@ -20,6 +20,8 @@ from data import (load_master, load_tags, load_projects,
                   get_country_detail, get_country_name,
                   get_regional_mdb, get_country_projects_top3,
                   get_finance_context, get_territory_note)
+from aggregator import get_articles_for_country
+from news_render import render_news_feed
 
 master_df   = load_master()
 tags_df     = load_tags()
@@ -133,7 +135,7 @@ def kpi_strip():
 
 
 def section_title(text, tooltip=None):
-    """Section label with optional info tooltip."""
+    """Section label with optional info tooltip (CSS hover)."""
     children = [
         html.Span(text, style={
             "fontSize"      : "11px",
@@ -146,13 +148,13 @@ def section_title(text, tooltip=None):
     ]
     if tooltip:
         children.append(
-            html.Span(" ⓘ", style={
-                "fontSize"   : "11px",
-                "color"      : C["text_muted"],
-                "cursor"     : "help",
-                "position"   : "relative",
-                "title"      : tooltip,
-            })
+            html.Span([
+                "ⓘ",
+                html.Span(
+                    tooltip,
+                    className="info-tip-text"
+                )
+            ], className="info-tip")
         )
     return html.Div(children, style={"marginBottom": "12px"})
 
@@ -818,60 +820,31 @@ def country_panel_content(iso_code):
         projects_content
     ], style={"marginBottom": "16px"})
 
-    # ── SECTION 7: News ──────────────────────────────────
+    # ── SECTION 7: News (from feed) ──────────────────────
+    news_articles = get_articles_for_country(iso_code, limit=5)
     news_section = html.Div([
-        section_title("Climate News"),
-        html.Div([
-            html.Div("◌", style={
-                "fontSize"     : "18px",
-                "color"        : C["text_muted"],
-                "marginBottom" : "6px"
-            }),
-            html.Div(
-                "Live news feed available once "
-                "Google CSE is configured.",
-                style={
-                    "fontSize"   : "12px",
-                    "color"      : C["text_muted"],
-                    "lineHeight" : "1.5",
-                    "fontFamily" : "Inter, sans-serif",
-                }
-            )
-        ], style={
-            "textAlign"       : "center",
-            "padding"         : "20px",
-            "backgroundColor" : C["surface_high"],
-            "border"          : f"1px solid {C['border']}",
-            "borderRadius"    : "4px",
-        })
+        section_title("Climate News", tooltip="Sources ranked by credibility tier: T1 = Wire services and specialist press (Reuters, Carbon Brief, PV Magazine). T2 = Institutional and multilateral (IEA, World Bank, UNEP). T3 = Regional press (Africa Report, Livemint, Nikkei Asia). Articles scored by source tier and recency."),
+        render_news_feed(
+            news_articles,
+            empty_message=f"No recent climate investment news for {full_name}."
+        )
     ], style={"marginBottom": "16px"})
 
-    # ── SECTION 8: Subsidies ─────────────────────────────
+    # ── SECTION 8: Subsidies (from feed) ─────────────────
+    all_articles = get_articles_for_country(iso_code, limit=20)
+    subsidy_articles = [
+        a for a in all_articles
+        if any(kw in (a.get("title","") + " " + a.get("summary","")).lower()
+               for kw in ["subsid", "incentive", "tax credit", "tariff",
+                          "policy", "regulation", "framework", "scheme",
+                          "grant", "concessional", "rebate", "feed-in"])
+    ][:5]
     subsidies_section = html.Div([
-        section_title("Subsidies and Incentives"),
-        html.Div([
-            html.Div("◌", style={
-                "fontSize"     : "18px",
-                "color"        : C["text_muted"],
-                "marginBottom" : "6px"
-            }),
-            html.Div(
-                "Government subsidy and incentive data "
-                "available once Google CSE is configured.",
-                style={
-                    "fontSize"   : "12px",
-                    "color"      : C["text_muted"],
-                    "lineHeight" : "1.5",
-                    "fontFamily" : "Inter, sans-serif",
-                }
-            )
-        ], style={
-            "textAlign"       : "center",
-            "padding"         : "20px",
-            "backgroundColor" : C["surface_high"],
-            "border"          : f"1px solid {C['border']}",
-            "borderRadius"    : "4px",
-        })
+        section_title("Subsidies and Incentives", tooltip="Sources ranked by credibility tier: T1 = Wire services and specialist press (Reuters, Carbon Brief, PV Magazine). T2 = Institutional and multilateral (IEA, World Bank, UNEP). T3 = Regional press (Africa Report, Livemint, Nikkei Asia). Articles scored by source tier and recency."),
+        render_news_feed(
+            subsidy_articles,
+            empty_message=f"No subsidy or incentive data found for {full_name}."
+        )
     ], style={"marginBottom": "16px"})
 
     return html.Div([
