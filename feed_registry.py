@@ -139,8 +139,8 @@ SOURCES = [
         "domain"     : "www.worldbank.org",
         "label"      : "World Bank",
         "tier"       : 2,
-        "method"     : "scrape",
-        "scrape_url" : "https://www.worldbank.org/en/topic/climatechange/news",
+        "method"     : "playwright",
+        "scrape_url" : "https://blogs.worldbank.org/en/climatechange",
         "category"   : "institutional",
     },
     {
@@ -180,7 +180,7 @@ SOURCES = [
         "label"      : "EBRD",
         "tier"       : 2,
         "method"     : "playwright",
-        "scrape_url" : "https://www.ebrd.com/news/news.html",
+        "scrape_url" : "https://www.ebrd.com/news",
         "category"   : "institutional",
     },
     {
@@ -234,7 +234,7 @@ SOURCES = [
         "label"      : "OECD",
         "tier"       : 2,
         "method"     : "playwright",
-        "scrape_url" : "https://www.oecd.org/en/topics/sub-issues/climate-change-and-environment.html",
+        "scrape_url" : "https://www.oecd.org/en/about/news.html",
         "category"   : "policy",
     },
     {
@@ -242,7 +242,7 @@ SOURCES = [
         "label"      : "UNDP",
         "tier"       : 2,
         "method"     : "playwright",
-        "scrape_url" : "https://www.undp.org/press-releases",
+        "scrape_url" : "https://climatepromise.undp.org/news-and-stories",
         "category"   : "policy",
     },
     {

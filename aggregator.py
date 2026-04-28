@@ -428,7 +428,12 @@ def fetch_playwright(source):
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
+            ctx = browser.new_context(
+                user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                           "AppleWebKit/537.36 (KHTML, like Gecko) "
+                           "Chrome/124.0.0.0 Safari/537.36"
+            )
+            page = ctx.new_page()
             page.goto(scrape_url, timeout=20000)
             page.wait_for_timeout(4000)
             html = page.content()
@@ -447,11 +452,28 @@ def fetch_playwright(source):
                 continue
             if href == scrape_url or href.endswith(("/news", "/news/")):
                 continue
+            # Skip obvious navigation and category pages
+            nav_words = ["browse all", "read more", "view all",
+                         "see all", "load more", "reports and research",
+                         "policy papers", "publications", "subscribe",
+                         "sign up", "contact us", "about us"]
+            if any(nw in text.lower() for nw in nav_words):
+                continue
+            # Skip root category pages (but not individual articles)
+            skip_endings = ["/news", "/stories", "/press-releases",
+                           "/blog", "/publications", "/reports"]
+            clean_href = href.rstrip("/")
+            if any(clean_href.endswith(e) for e in skip_endings):
+                continue
 
             # Must look like a news/article URL
-            news_patterns = ["/news/", "/stories/", "/story/",
+            news_patterns = ["/news/", "/news-and-stories/",
+                           "/stories/", "/story/",
                            "/press-release", "/article/", "/blog/",
-                           "/update/", "/feature/"]
+                           "/update/", "/feature/", "/publication",
+                           "/media-advisories/", "/speech-statements/",
+                           "/climatechange/", "/climate/",
+                           "/energy/", "/sustainability/"]
             if not any(pat in href for pat in news_patterns):
                 continue
 
@@ -493,6 +515,13 @@ def fetch_playwright(source):
                 p_tag = parent.find("p")
                 if p_tag:
                     summary = p_tag.get_text(strip=True)[:300]
+
+            # Fallback: extract date from URL path (e.g. /2026/04/)
+            if not pub_date:
+                import re as _re
+                url_date = _re.search(r"/(\d{4})/(\d{2})/", link)
+                if url_date:
+                    pub_date = f"{url_date.group(1)}-{url_date.group(2)}-01"
 
             days = _days_old(pub_date)
             score = credibility_score(source["tier"], days)
