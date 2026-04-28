@@ -21,6 +21,7 @@ from data import (load_master, load_tags, load_projects,
                   get_regional_mdb, get_country_projects_top3,
                   get_finance_context, get_territory_note)
 from aggregator import get_articles_for_country
+from wgi import get_governance
 from news_render import render_news_feed
 
 master_df   = load_master()
@@ -697,6 +698,68 @@ def country_panel_content(iso_code):
         ], style={"display": "flex", "gap": "16px"})
     ], style={"marginBottom": "16px"})
 
+    # ── SECTION 5b: Governance (WGI) ────────────────────
+    gov = get_governance(iso_code)
+    if gov and gov.get("governance_score") is not None:
+        def gov_colour(val):
+            if val is None: return C["text_muted"]
+            if val >= 60: return C["emerald"]
+            if val >= 40: return C["amber"]
+            return C["crimson"]
+
+        governance_section = html.Div([
+            section_title("Governance", tooltip=(
+                "World Bank Worldwide Governance Indicators (WGI). "
+                "Scores 0-100 based on percentile rank across all countries. "
+                "Composite is the average of four indicators. "
+                f"Data year: {gov.get('data_year', 'N/A')}."
+            )),
+            html.Div([
+                html.Div([
+                    data_row("Political Stability",
+                        f"{gov['political_stability']:.0f}/100"
+                        if gov.get("political_stability") is not None
+                        else "N/A",
+                        colour=gov_colour(gov.get("political_stability"))),
+                    data_row("Rule of Law",
+                        f"{gov['rule_of_law']:.0f}/100"
+                        if gov.get("rule_of_law") is not None
+                        else "N/A",
+                        colour=gov_colour(gov.get("rule_of_law"))),
+                ], style={"flex": "1"}),
+                html.Div([
+                    data_row("Govt Effectiveness",
+                        f"{gov['govt_effectiveness']:.0f}/100"
+                        if gov.get("govt_effectiveness") is not None
+                        else "N/A",
+                        colour=gov_colour(gov.get("govt_effectiveness"))),
+                    data_row("Control of Corruption",
+                        f"{gov['control_corruption']:.0f}/100"
+                        if gov.get("control_corruption") is not None
+                        else "N/A",
+                        colour=gov_colour(gov.get("control_corruption"))),
+                ], style={"flex": "1"}),
+            ], style={"display": "flex", "gap": "16px"}),
+            html.Div([
+                html.Span("Composite: ", style={
+                    "fontSize"   : "11px",
+                    "color"      : C["text_muted"],
+                    "fontFamily" : "Inter, sans-serif",
+                }),
+                html.Span(
+                    f"{gov['governance_score']:.0f}/100",
+                    style={
+                        "fontSize"   : "13px",
+                        "fontWeight" : "700",
+                        "color"      : gov_colour(gov.get("governance_score")),
+                        "fontFamily" : "Inter, sans-serif",
+                    }
+                ),
+            ], style={"marginTop": "4px"}),
+        ], style={"marginBottom": "16px"})
+    else:
+        governance_section = html.Div()
+
     # ── SECTION 6: MDB Project Pipeline ─────────────────
     proj_count  = country_data.get("wb_project_count", 0)
     proj_active = country_data.get("wb_active_projects", 0)
@@ -855,6 +918,7 @@ def country_panel_content(iso_code):
         ndc_section,
         signals_section,
         metrics,
+        governance_section,
         projects_section,
         news_section,
         subsidies_section,

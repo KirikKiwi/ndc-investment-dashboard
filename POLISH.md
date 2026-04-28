@@ -24,3 +24,8 @@
 
 ## Data Quality
 15. Article deduplication — group same story across sources
+
+## Data Integrations (Pending)
+16. OECD CRS / Rio Markers — API unstable, download CSV manually from data-explorer.oecd.org and process locally
+17. IATI — d-portal data quality too low (dominated by small NGO projects). Revisit with official IATI datastore API key, filter by major DFIs only
+18. Blocked news sources (14) — Reuters, Bloomberg, FT, Devex, IRENA, AfDB, IADB need paid proxy or official API access
