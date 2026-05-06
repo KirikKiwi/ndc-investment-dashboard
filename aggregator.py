@@ -40,8 +40,14 @@ DB_PATH = os.path.join(
 
 REQUEST_TIMEOUT  = 15
 REQUEST_HEADERS  = {
-    "User-Agent": "NDC-Dashboard/1.0 (climate research aggregator)",
-    "Accept"    : "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "User-Agent"               : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept"                   : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language"          : "en-GB,en;q=0.9",
+    "Sec-Fetch-Dest"           : "document",
+    "Sec-Fetch-Mode"           : "navigate",
+    "Sec-Fetch-Site"           : "none",
+    "Sec-Fetch-User"           : "?1",
+    "Upgrade-Insecure-Requests": "1",
 }
 MAX_ARTICLE_AGE  = 365   # days — prune older articles
 MAX_PER_SOURCE   = 20    # articles per source per run
@@ -290,7 +296,8 @@ def fetch_scrape(source):
             or soup.find_all("div", class_=lambda c: c and any(
                 x in str(c).lower() for x in
                 ["post", "story", "article", "card", "item",
-                 "news", "entry", "listing", "result"]
+                 "news", "entry", "listing", "result", "press",
+                 "teaser", "media", "content-item"]
             ), limit=MAX_PER_SOURCE)
             or soup.find_all("li", class_=lambda c: c and any(
                 x in str(c).lower() for x in
@@ -299,7 +306,7 @@ def fetch_scrape(source):
         )
 
         if not containers:
-            # Fallback: find all headings with links
+            # Fallback 1: find all headings with links
             headings = soup.find_all(["h2", "h3", "h4"], limit=MAX_PER_SOURCE)
             for h in headings:
                 a = h.find("a", href=True)
@@ -307,7 +314,7 @@ def fetch_scrape(source):
                     link = urljoin(scrape_url, a["href"])
                     title = a.get_text(strip=True)
                     if title and len(title) > 10:
-                        days = 90  # unknown date for heading-only
+                        days = 90
                         score = credibility_score(source["tier"], days)
                         articles.append({
                             "article_id"       : _article_id(link),
@@ -322,6 +329,66 @@ def fetch_scrape(source):
                             "published_date"   : None,
                             "credibility_score": score,
                         })
+            if articles:
+                return articles
+
+            # Fallback 2: find all links matching news URL patterns
+            seen_urls = set()
+            for a in soup.find_all("a", href=True):
+                text = a.get_text(strip=True)
+                href = a["href"]
+                if len(text) < 25:
+                    continue
+                link = urljoin(scrape_url, href)
+                if link in seen_urls:
+                    continue
+                # Must match a news-like URL pattern
+                news_pats = ["/sustainability/", "/news-and-events/",
+                            "/news-events/", "/stories/", "/story/",
+                            "/press-release", "/article/", "/blog/",
+                            "/update/", "/feature/", "/content/",
+                            "/climatechange/", "/climate/"]
+                if not any(pat in link for pat in news_pats):
+                    continue
+                # Skip navigation
+                nav_words = ["browse", "read more", "view all", "see all",
+                            "subscribe", "sign up", "contact", "about us",
+                            "boards, policy"]
+                if any(nw in text.lower() for nw in nav_words):
+                    continue
+                # Skip category landing pages
+                skip_endings = ["/news", "/stories", "/press-releases",
+                               "/blog", "/publications", "/reports",
+                               "/sustainability", "/sustainability/"]
+                if any(link.rstrip("/").endswith(e.rstrip("/")) for e in skip_endings):
+                    continue
+
+                seen_urls.add(link)
+
+                # Try to extract date from URL
+                pub_date = None
+                import re as _re
+                url_date = _re.search(r"/(\d{4})/(\d{2})/", link)
+                if url_date:
+                    pub_date = f"{url_date.group(1)}-{url_date.group(2)}-01"
+
+                days = _days_old(pub_date)
+                score = credibility_score(source["tier"], days)
+                articles.append({
+                    "article_id"       : _article_id(link),
+                    "title"            : text[:200],
+                    "summary"          : "",
+                    "url"              : link,
+                    "image_url"        : None,
+                    "source_domain"    : source["domain"],
+                    "source_label"     : source["label"],
+                    "source_tier"      : source["tier"],
+                    "category"         : source.get("category", "news"),
+                    "published_date"   : pub_date,
+                    "credibility_score": score,
+                })
+                if len(articles) >= MAX_PER_SOURCE:
+                    break
             return articles
 
         for container in containers:

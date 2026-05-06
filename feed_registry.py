@@ -27,7 +27,7 @@ SOURCES = [
         "label"      : "Reuters",
         "tier"       : 1,
         "method"     : "scrape",
-        "scrape_url" : "https://www.reuters.com/business/energy/",
+        "scrape_url" : "https://www.reuters.com/sustainability/",
         "category"   : "news",
     },
     {
@@ -35,7 +35,7 @@ SOURCES = [
         "label"      : "Reuters Environment",
         "tier"       : 1,
         "method"     : "scrape",
-        "scrape_url" : "https://www.reuters.com/business/environment/",
+        "scrape_url" : "https://www.reuters.com/sustainability/climate-energy/",
         "category"   : "news",
     },
     {
@@ -155,7 +155,7 @@ SOURCES = [
         "domain"     : "www.afdb.org",
         "label"      : "African Development Bank",
         "tier"       : 2,
-        "method"     : "scrape",
+        "method"     : "playwright",
         "scrape_url" : "https://www.afdb.org/en/news-and-events/press-releases",
         "category"   : "institutional",
     },
