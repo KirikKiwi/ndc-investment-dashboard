@@ -100,7 +100,29 @@ TERMINOLOGY = [
             "finance activity. Tier 3 indicates frontier markets with "
             "high conditional finance need and elevated risk profiles."
         ),
+        "calc"      : (
+            "Tier 1: ND-GAIN readiness above 0.5 and GDP per capita "
+            "above $5,000. Tier 2: readiness above 0.35. "
+            "Tier 3: all remaining markets."
+        ),
         "colour"    : C["amber"],
+    },
+    {
+        "term"      : "Composite Benchmark",
+        "full"      : "Country Investment Score",
+        "definition": (
+            "A weighted composite score that aggregates six "
+            "country-level indicators into a single 0-100 investment "
+            "readiness metric, used to rank countries within their "
+            "tier and identify relative opportunities."
+        ),
+        "calc"      : (
+            "Weights: ND-GAIN Readiness 30%, GDP per capita 25%, "
+            "Renewables Share 20%, Climate Vulnerability 15%, "
+            "World Bank Project Count 5%, Conditional Finance Uplift 5%. "
+            "Each component is normalised before weighting."
+        ),
+        "colour"    : C["emerald"],
     },
     {
         "term"      : "ND-GAIN Score",
@@ -111,7 +133,45 @@ TERMINOLOGY = [
             "investment for adaptation. Higher scores indicate greater "
             "resilience and institutional capacity."
         ),
+        "calc"      : (
+            "Published annually by the University of Notre Dame. "
+            "Vulnerability covers six life-supporting sectors; readiness "
+            "covers economic, governance and social components. "
+            "This tool uses the combined readiness sub-index."
+        ),
         "colour"    : C["cobalt"],
+    },
+    {
+        "term"      : "Governance Score",
+        "full"      : "World Bank WGI Composite",
+        "definition": (
+            "A composite of four World Bank Worldwide Governance "
+            "Indicators measuring the quality of institutions and "
+            "policy environment. Higher scores reflect stronger "
+            "institutional capacity for delivering climate investments."
+        ),
+        "calc"      : (
+            "Average of: Political Stability, Rule of Law, Government "
+            "Effectiveness, and Control of Corruption. Native WGI scores "
+            "(-2.5 to +2.5) are rescaled to a 0-100 range."
+        ),
+        "colour"    : C["cobalt"],
+    },
+    {
+        "term"      : "Climate Finance",
+        "full"      : "OECD Rio Markers",
+        "definition": (
+            "Bilateral official development assistance flows tracked "
+            "by the OECD and tagged as climate mitigation or adaptation "
+            "using the Rio Marker system. Values are the most recent "
+            "available year, in USD millions."
+        ),
+        "calc"      : (
+            "Source: OECD DAC Creditor Reporting System, Rio Marker "
+            "codes 20 (mitigation) and 30 (adaptation). "
+            "Includes both principal and significant marker scores."
+        ),
+        "colour"    : C["amber"],
     },
     {
         "term"      : "Confidence Score",
@@ -137,6 +197,23 @@ TERMINOLOGY = [
             "financing instrument."
         ),
         "colour"    : C["nature"],
+    },
+    {
+        "term"      : "Credibility Tier",
+        "full"      : "News Source Classification",
+        "definition": (
+            "News sources are assigned a credibility tier that "
+            "determines how prominently articles are surfaced in "
+            "country profiles. Articles from higher-tier sources "
+            "are ranked above lower-tier sources of equal recency."
+        ),
+        "calc"      : (
+            "T1: wire services and specialist climate press. "
+            "T2: institutional and multilateral publishers. "
+            "T3: regional and general press. "
+            "Final article score combines source tier and recency."
+        ),
+        "colour"    : C["crimson"],
     },
 ]
 
@@ -199,14 +276,13 @@ def layout():
 
                 # Subheadline
                 html.P(
-                    "Every country has committed to a climate plan. "
-                    "Most of those plans contain investment signals "
-                    "buried in policy language. Green-Gott's Vault "
-                    "unlocks them: 198 country profiles, 7 investment "
-                    "sectors, conditional finance signals, governance "
-                    "scores and live policy intelligence, all in one "
-                    "place. Built for analysts who need more than a "
-                    "spreadsheet.",
+                    "Every nation has made its climate commitments. "
+                    "The real treasure lies in knowing where those "
+                    "commitments translate into investable opportunities. "
+                    "Green-Gott's Vault maps 198 country profiles, "
+                    "connecting NDC policy language to investment signals, "
+                    "governance scores and climate finance flows across "
+                    "every major economy on earth.",
                     style={
                         "fontSize"     : "15px",
                         "color"        : C["text_secondary"],
@@ -538,6 +614,7 @@ def layout():
                         "fontWeight" : "700",
                         "fontFamily" : "Inter, sans-serif",
                         "fontSize"   : "13px",
+                        "flexShrink" : "0",
                     }),
                     html.Span(step, style={
                         "fontSize"   : "13px",
@@ -545,21 +622,34 @@ def layout():
                         "lineHeight" : "1.6",
                         "fontFamily" : "Inter, sans-serif",
                     })
-                ], style={"marginBottom": "12px" if n < 4 else "0"})
+                ], style={
+                    "display"      : "flex",
+                    "alignItems"   : "flex-start",
+                    "marginBottom" : "14px" if n < 6 else "0",
+                })
 for n, step in [
                     (1, "Open the Dashboard and explore the interactive "
                         "globe. Countries are colour-coded by investment "
-                        "tier by default."),
-                    (2, "Click any country to open its profile panel. "
-                        "Review the NDC summary, identified sectors, "
-                        "economic indicators and project pipeline."),
-                    (3, "Use the View By selector to switch the globe "
-                        "colour coding between investment tier, ND-GAIN "
-                        "score, climate vulnerability and renewable "
-                        "energy share."),
-                    (4, "Scroll below the globe to view global analytics "
-                        "covering sector coverage, tier distribution and "
-                        "commitment type breakdown across all NDCs."),
+                        "tier by default. Drag to spin, scroll to zoom."),
+                    (2, "Use the View By selector on the left panel to "
+                        "switch between Investment Tier, ND-GAIN Score, "
+                        "Climate Vulnerability, and Renewables Share "
+                        "colour modes."),
+                    (3, "Click any country to open its detailed climate "
+                        "investment profile. The card shows governance "
+                        "scores, climate finance flows, NDC commitments, "
+                        "identified sectors and live policy news."),
+                    (4, "Inside a country card, click any sector pill to "
+                        "open the Sector Deep-Dive panel. This shows "
+                        "sector-specific NDC signals, matched World Bank "
+                        "projects and recent sector news."),
+                    (5, "Scroll below the globe to access the Analytics "
+                        "section. Filter by region or country group for "
+                        "cross-country comparisons of tier distribution, "
+                        "sector coverage and commitment types."),
+                    (6, "Use the download tools in the filter bar to "
+                        "export filtered country and indicator data "
+                        "for offline analysis."),
                 ]            ], style={
                 "backgroundColor" : C["surface_high"],
                 "border"          : f"1px solid {C['border']}",
@@ -639,7 +729,19 @@ for n, step in [
                             "margin"     : "0",
                             "fontFamily" : "Inter, sans-serif",
                         }
-                    )
+                    ),
+                    *([html.P(
+                        term["calc"],
+                        style={
+                            "fontSize"   : "11px",
+                            "color"      : C["text_muted"],
+                            "lineHeight" : "1.5",
+                            "margin"     : "8px 0 0 0",
+                            "fontFamily" : "Inter, sans-serif",
+                            "borderTop"  : f"1px solid {C['border']}",
+                            "paddingTop" : "8px",
+                        }
+                    )] if term.get("calc") else [])
                 ], style={
                     "backgroundColor" : C["surface_high"],
                     "border"          : f"1px solid {C['border']}",
