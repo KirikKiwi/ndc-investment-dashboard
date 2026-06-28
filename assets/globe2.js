@@ -1,4 +1,4 @@
-/* v1776405322 */
+/* v1776405323 */
 /* ============================================================
    NDC Investment Dashboard
    globe.js — D3 globe with choropleth colouring
@@ -548,26 +548,42 @@
         }
     }
 
+    let _globeInitialised = false;
+
     function bootstrap() {
         const d3Script    = document.createElement("script");
         d3Script.src      = "https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js";
         d3Script.onload   = function() {
             const topoScript  = document.createElement("script");
             topoScript.src    = "https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js";
-            topoScript.onload = function() { waitForContainer(40); };
+            topoScript.onload = function() { waitForContainer(60); };
             document.head.appendChild(topoScript);
         };
         document.head.appendChild(d3Script);
     }
 
     function waitForContainer(attempts) {
+        if (_globeInitialised) return;
         const container = document.getElementById("globe-container");
-        if (container) {
+        if (container && container.offsetParent !== null) {
+            _globeInitialised = true;
             loadDataAndInit();
-        } else if (attempts > 0) {
+            return;
+        }
+        if (attempts > 0) {
             setTimeout(function() { waitForContainer(attempts - 1); }, 250);
         } else {
-            console.error("Globe container not found after waiting");
+            // Polling exhausted — watch via MutationObserver for client-side navigation
+            const obs = new MutationObserver(function() {
+                if (_globeInitialised) { obs.disconnect(); return; }
+                const c = document.getElementById("globe-container");
+                if (c) {
+                    obs.disconnect();
+                    _globeInitialised = true;
+                    loadDataAndInit();
+                }
+            });
+            obs.observe(document.body, { childList: true, subtree: true });
         }
     }
 

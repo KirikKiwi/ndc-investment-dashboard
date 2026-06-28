@@ -322,8 +322,9 @@ def build_paris_alignment(df, tags):
             ], style={"textAlign": "center", "flex": "1"}),
         ], style={"display": "flex", "gap": "16px"}),
         html.Div(
-            "Live COP finance tracking will be added in the "
-            "next data update via OECD Climate Finance API.",
+            "Source: OECD Climate Finance (2021 data). "
+            "Updated figures available via OECD Climate Finance API "
+            "when access is confirmed.",
             style={
                 "fontSize" : "11px", "color": C["text_muted"],
                 "fontFamily": "Inter, sans-serif",

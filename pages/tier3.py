@@ -18,6 +18,7 @@ from data import (load_master, load_tags, load_projects,
                   get_benchmark_score)
 from aggregator import get_articles_for_sector
 from news_render import render_news_feed
+from oecd_rio import get_climate_finance
 
 master_df   = load_master()
 tags_df     = load_tags()
@@ -372,8 +373,8 @@ def tier3_content(iso_code, sector_name):
             }),
             html.Div(proj_rows),
             html.Div(
-                "World Bank projects matched to this sector. "
-                "IATI coverage coming in Sprint 3.",
+                "World Bank projects matched to this sector by keyword. "
+                "Additional DFI coverage is planned.",
                 style={
                     "fontSize"  : "10px",
                     "color"     : C["text_muted"],
@@ -402,7 +403,7 @@ def tier3_content(iso_code, sector_name):
             }),
             html.Div(
                 "No World Bank projects matched to this sector. "
-                "IATI regional coverage coming in Sprint 3.",
+                "Additional DFI coverage is planned.",
                 style={
                     "fontSize"   : "12px",
                     "color"      : C["text_muted"],
@@ -419,6 +420,90 @@ def tier3_content(iso_code, sector_name):
         })
 
     # ── Section 3: Investment Landscape ─────────────────────
+    cf = get_climate_finance(iso_code)
+
+    def _fmt_usd(v):
+        if not v or v == 0: return "N/A"
+        if v >= 1e9: return f"${v/1e9:.1f}B"
+        if v >= 1e6: return f"${v/1e6:.0f}M"
+        return f"${v/1e3:.0f}K"
+
+    if cf and cf.get("total_latest", 0) > 0:
+        year    = cf["latest_year"]
+        mit_v   = cf["mitigation"]
+        ada_v   = cf["adaptation"]
+        total_v = cf["total_latest"]
+        max_val = max(mit_v, ada_v, 1)
+        mit_w   = int(mit_v / max_val * 100)
+        ada_w   = int(ada_v / max_val * 100)
+
+        instrument_block = html.Div([
+            html.Div("Mitigation vs Adaptation (OECD Rio Markers)", style={
+                "fontSize": "11px", "fontWeight": "600",
+                "color": C["text_muted"], "fontFamily": "Inter, sans-serif",
+                "marginBottom": "10px",
+            }),
+            html.Div([
+                html.Span("Mitigation", style={
+                    "fontSize": "11px", "color": C["text_secondary"],
+                    "fontFamily": "Inter, sans-serif", "flex": "1",
+                }),
+                html.Span(_fmt_usd(mit_v), style={
+                    "fontSize": "11px", "color": C["emerald"],
+                    "fontFamily": "Inter, sans-serif", "fontWeight": "600",
+                }),
+            ], style={"display": "flex", "justifyContent": "space-between",
+                      "marginBottom": "4px"}),
+            html.Div(html.Div(style={
+                "width": f"{mit_w}%", "backgroundColor": C["emerald"],
+                "height": "6px", "borderRadius": "3px", "minWidth": "4px",
+            }), style={
+                "backgroundColor": C["surface"], "height": "6px",
+                "borderRadius": "3px", "marginBottom": "10px",
+            }),
+            html.Div([
+                html.Span("Adaptation", style={
+                    "fontSize": "11px", "color": C["text_secondary"],
+                    "fontFamily": "Inter, sans-serif", "flex": "1",
+                }),
+                html.Span(_fmt_usd(ada_v), style={
+                    "fontSize": "11px", "color": C["cobalt"],
+                    "fontFamily": "Inter, sans-serif", "fontWeight": "600",
+                }),
+            ], style={"display": "flex", "justifyContent": "space-between",
+                      "marginBottom": "4px"}),
+            html.Div(html.Div(style={
+                "width": f"{ada_w}%", "backgroundColor": C["cobalt"],
+                "height": "6px", "borderRadius": "3px", "minWidth": "4px",
+            }), style={
+                "backgroundColor": C["surface"], "height": "6px",
+                "borderRadius": "3px", "marginBottom": "10px",
+            }),
+            html.Div(
+                f"OECD Rio Markers {year} · Total: {_fmt_usd(total_v)}",
+                style={
+                    "fontSize": "10px", "color": C["text_muted"],
+                    "fontFamily": "Inter, sans-serif", "fontStyle": "italic",
+                }
+            ),
+        ], style={
+            "padding": "10px 12px",
+            "backgroundColor": C["bg"],
+            "border": f"1px solid {C['border']}",
+            "borderRadius": "4px",
+        })
+    else:
+        instrument_block = _placeholder_block(
+            "Instrument Mix",
+            "No OECD Rio Markers data available for this country."
+        )
+
+    investor_block = _placeholder_block(
+        "Active Investors",
+        "Investor tracking integration planned. DFI and private fund "
+        "data will be added when an appropriate data source is confirmed."
+    )
+
     investment_section = html.Div([
         html.Div("Investment Landscape", style={
             "fontSize"      : "11px",
@@ -430,17 +515,8 @@ def tier3_content(iso_code, sector_name):
             "marginBottom"  : "12px",
         }),
         html.Div([
-            _placeholder_block(
-                "Active Investors and Funds",
-                "Institutional investors, DFIs and fund managers "
-                "active in this sector and country. "
-                "Available via IATI in Sprint 3."
-            ),
-            _placeholder_block(
-                "Instrument Mix",
-                "Grant, debt, equity and guarantee breakdown for "
-                "this sector. Available via OECD CRS in Sprint 3."
-            ),
+            investor_block,
+            instrument_block,
         ], style={"display": "flex", "flexDirection": "column",
                   "gap": "12px"}),
     ], style={
