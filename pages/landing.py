@@ -204,7 +204,7 @@ def layout():
                     "buried in policy language. Green-Gott's Vault "
                     "unlocks them: 198 country profiles, 7 investment "
                     "sectors, conditional finance signals, governance "
-                    "scores and live policy intelligence — all in one "
+                    "scores and live policy intelligence, all in one "
                     "place. Built for analysts who need more than a "
                     "spreadsheet.",
                     style={
@@ -659,44 +659,6 @@ for n, step in [
             "padding"         : "80px 80px",
         }),
 
-        # ── DATA SOURCES ─────────────────────────────────────
-        html.Div([
-            html.Div(
-                "Open source data only",
-                style={
-                    "fontSize"      : "11px",
-                    "fontWeight"    : "600",
-                    "textTransform" : "uppercase",
-                    "letterSpacing" : "1.5px",
-                    "color"         : C["text_muted"],
-                    "marginBottom"  : "24px",
-                    "textAlign"     : "center",
-                    "fontFamily"    : "Inter, sans-serif",
-                }
-            ),
-            html.Div([
-                html.Span(source, style={
-                    "color"        : C["text_muted"],
-                    "fontSize"     : "13px",
-                    "fontWeight"   : "500",
-                    "padding"      : "6px 16px",
-                    "border"       : f"1px solid {C['border']}",
-                    "borderRadius" : "3px",
-                    "fontFamily"   : "Inter, sans-serif",
-                })
-                for source in SOURCES
-            ], style={
-                "display"        : "flex",
-                "justifyContent" : "center",
-                "gap"            : "10px",
-                "flexWrap"       : "wrap",
-            }),
-        ], style={
-            "backgroundColor" : C["bg"],
-            "padding"         : "60px 80px",
-            "borderTop"       : f"1px solid {C['border']}",
-        }),
-
         # ── FINAL CTA ────────────────────────────────────────
         html.Div([
             html.Div([
@@ -783,10 +745,11 @@ for n, step in [
                         ]
                     ]
                 ], style={
-                    "marginBottom" : "12px",
-                    "display"      : "flex",
-                    "flexWrap"     : "wrap",
-                    "gap"          : "0",
+                    "marginBottom"   : "12px",
+                    "display"        : "flex",
+                    "flexWrap"       : "wrap",
+                    "justifyContent" : "center",
+                    "gap"            : "0",
                 }),
 
                 # Divider
@@ -796,51 +759,60 @@ for n, step in [
                     "margin"        : "12px 0",
                 }),
 
-                # Creator and GitHub row
+                # Creator and social row
                 html.Div([
-                    html.Span("Built by ", style={
+                    html.Span("Built by Pranav", style={
                         "fontSize"   : "11px",
                         "color"      : C["text_muted"],
                         "fontFamily" : "Inter, sans-serif",
                     }),
-                    html.A("Pranav R Girimaji", href="https://www.linkedin.com/in/prg99",
+                    html.A("in", href="https://www.linkedin.com/in/pranavmehrotra/",
                            target="_blank", style={
-                        "fontSize"       : "11px",
-                        "color"          : C["emerald"],
-                        "fontFamily"     : "Inter, sans-serif",
-                        "textDecoration" : "none",
-                        "fontWeight"     : "500",
+                        "fontSize"        : "10px",
+                        "color"           : C["emerald"],
+                        "fontFamily"      : "Inter, sans-serif",
+                        "textDecoration"  : "none",
+                        "fontWeight"      : "700",
+                        "backgroundColor" : C["emerald"] + "18",
+                        "border"          : f"1px solid {C['emerald']}40",
+                        "borderRadius"    : "3px",
+                        "padding"         : "2px 7px",
+                        "letterSpacing"   : "0.5px",
                     }),
-                    html.Span("  ·  ", style={
-                        "fontSize"  : "11px",
-                        "color"     : C["border"],
-                        "fontFamily": "Inter, sans-serif",
-                    }),
-                    html.A("GitHub", href="https://github.com/KirikKiwi/ndc-investment-dashboard",
+                    html.A("GH", href="https://github.com/KirikKiwi/ndc-investment-dashboard",
                            target="_blank", style={
-                        "fontSize"       : "11px",
-                        "color"          : C["text_muted"],
-                        "fontFamily"     : "Inter, sans-serif",
-                        "textDecoration" : "none",
+                        "fontSize"        : "10px",
+                        "color"           : C["emerald"],
+                        "fontFamily"      : "Inter, sans-serif",
+                        "textDecoration"  : "none",
+                        "fontWeight"      : "700",
+                        "backgroundColor" : C["emerald"] + "18",
+                        "border"          : f"1px solid {C['emerald']}40",
+                        "borderRadius"    : "3px",
+                        "padding"         : "2px 7px",
+                        "letterSpacing"   : "0.5px",
                     }),
-                    html.Span("  ·  ", style={
-                        "fontSize"  : "11px",
-                        "color"     : C["border"],
-                        "fontFamily": "Inter, sans-serif",
-                    }),
-                    html.Span("Green-Gott's Vault · Beta 2.0", style={
+                    html.Span("  ·  Green-Gott's Vault · Beta 2.0", style={
                         "fontSize"   : "11px",
                         "color"      : C["text_muted"],
                         "fontFamily" : "Inter, sans-serif",
                     }),
-                ], style={"display": "flex", "alignItems": "center",
-                          "flexWrap": "wrap", "gap": "0"}),
+                ], style={
+                    "display"        : "flex",
+                    "alignItems"     : "center",
+                    "justifyContent" : "center",
+                    "flexWrap"       : "wrap",
+                    "gap"            : "8px",
+                }),
 
-            ], style={"maxWidth": "960px"}),
+            ], style={"maxWidth": "960px", "width": "100%"}),
         ], style={
             "backgroundColor" : C["surface"],
             "borderTop"       : f"1px solid {C['border']}",
             "padding"         : "32px 80px",
+            "textAlign"       : "center",
+            "display"         : "flex",
+            "justifyContent"  : "center",
         }),
 
     ], style={

@@ -8,8 +8,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from dash import html, dcc
 from components import C, T
-from pages.landing import layout as landing_layout
-from pages.globe   import layout as globe_layout
+from pages.landing      import layout as landing_layout
+from pages.globe        import layout as globe_layout
+from pages.methodology  import layout as methodology_layout
 
 # ============================================================
 # NAVBAR
@@ -21,7 +22,7 @@ def navbar():
 
             # Logo
             html.A([
-                html.Span("◆ ", style={
+                html.Span("👺 ", style={
                     "color"    : C["emerald"],
                     "fontSize" : "16px"
                 }),
@@ -48,7 +49,7 @@ def navbar():
                     "padding"        : "6px 12px",
                     "borderRadius"   : "4px",
                 }),
-                html.A("Methodology", href="/", style={
+                html.A("Methodology", href="/methodology", style={
                     "color"          : C["text_secondary"],
                     "textDecoration" : "none",
                     "fontSize"       : "13px",
@@ -134,6 +135,8 @@ from dash import callback, Output, Input
 def route(pathname):
     if pathname == "/dashboard":
         return globe_layout()
+    if pathname == "/methodology":
+        return methodology_layout()
     return landing_layout()
 
 

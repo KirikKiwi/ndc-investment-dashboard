@@ -208,10 +208,10 @@
 
 #tier3-panel-overlay {
     position: fixed;
-    top: 0;
+    top: 52px;
     left: -70%;
     width: 65%;
-    height: 100vh;
+    height: calc(100vh - 52px);
     background-color: #111111;
     border-right: 1px solid #2a2a2a;
     z-index: 200;
