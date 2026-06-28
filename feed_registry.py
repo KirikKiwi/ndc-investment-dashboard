@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# feed_registry.py — Source registry for news aggregator
+# feed_registry.py: Source registry for news aggregator
 # Maps all 50 curated domains to feed method, tier, metadata
 # Sprint 3
 # ============================================================
@@ -20,7 +20,7 @@
 
 SOURCES = [
 
-    # ── TIER 1 — Wire Services / Major Press ─────────────
+    # ── TIER 1: Wire Services / Major Press ─────────────
 
     {
         "domain"     : "www.reuters.com",
@@ -71,7 +71,7 @@ SOURCES = [
         "category"   : "news",
     },
 
-    # ── TIER 1 — Specialist Climate Press ────────────────
+    # ── TIER 1: Specialist Climate Press ────────────────
 
     {
         "domain"     : "www.carbonbrief.org",
@@ -106,7 +106,7 @@ SOURCES = [
         "category"   : "news",
     },
 
-    # ── TIER 1 — Specialist Energy Press ─────────────────
+    # ── TIER 1: Specialist Energy Press ─────────────────
 
     {
         "domain"     : "www.pv-magazine.com",
@@ -133,7 +133,7 @@ SOURCES = [
         "category"   : "news",
     },
 
-    # ── TIER 2 — MDBs ───────────────────────────────────
+    # ── TIER 2: MDBs ───────────────────────────────────
 
     {
         "domain"     : "www.worldbank.org",
@@ -192,7 +192,7 @@ SOURCES = [
         "category"   : "institutional",
     },
 
-    # ── TIER 2 — Climate Funds ───────────────────────────
+    # ── TIER 2: Climate Funds ───────────────────────────
 
     {
         "domain"     : "www.thegef.org",
@@ -211,7 +211,7 @@ SOURCES = [
         "category"   : "institutional",
     },
 
-    # ── TIER 2 — Multilateral Policy ─────────────────────
+    # ── TIER 2: Multilateral Policy ─────────────────────
 
     {
         "domain"     : "www.iea.org",
@@ -270,7 +270,7 @@ SOURCES = [
         "category"   : "subsidies",
     },
 
-    # ── TIER 2 — Data / Registry Platforms ───────────────
+    # ── TIER 2: Data / Registry Platforms ───────────────
 
     {
         "domain"     : "*.unfccc.int",
@@ -321,7 +321,7 @@ SOURCES = [
         "category"   : "news",
     },
 
-    # ── TIER 3 — Sub-Saharan Africa ──────────────────────
+    # ── TIER 3: Sub-Saharan Africa ──────────────────────
 
     {
         "domain"     : "www.theafricareport.com",
@@ -348,7 +348,7 @@ SOURCES = [
         "category"   : "news",
     },
 
-    # ── TIER 3 — North Africa / Middle East ──────────────
+    # ── TIER 3: North Africa / Middle East ──────────────
 
     {
         "domain"     : "www.thenationalnews.com",
@@ -367,7 +367,7 @@ SOURCES = [
         "category"   : "news",
     },
 
-    # ── TIER 3 — Latin America / Caribbean ───────────────
+    # ── TIER 3: Latin America / Caribbean ───────────────
 
     {
         "domain"     : "www.bnamericas.com",
@@ -394,7 +394,7 @@ SOURCES = [
         "category"   : "policy",
     },
 
-    # ── TIER 3 — South Asia ──────────────────────────────
+    # ── TIER 3: South Asia ──────────────────────────────
 
     {
         "domain"     : "www.livemint.com",
@@ -413,7 +413,7 @@ SOURCES = [
         "category"   : "news",
     },
 
-    # ── TIER 3 — Southeast / East Asia ───────────────────
+    # ── TIER 3: Southeast / East Asia ───────────────────
 
     {
         "domain"     : "asia.nikkei.com",
@@ -440,7 +440,7 @@ SOURCES = [
         "category"   : "news",
     },
 
-    # ── TIER 3 — Central Asia / Caucasus ─────────────────
+    # ── TIER 3: Central Asia / Caucasus ─────────────────
 
     {
         "domain"     : "eurasianet.org",
@@ -451,7 +451,7 @@ SOURCES = [
         "category"   : "news",
     },
 
-    # ── TIER 3 — Eastern Europe / Balkans ────────────────
+    # ── TIER 3: Eastern Europe / Balkans ────────────────
 
     {
         "domain"     : "balkangreenenergynews.com",
@@ -462,7 +462,7 @@ SOURCES = [
         "category"   : "news",
     },
 
-    # ── TIER 3 — Pacific Islands ─────────────────────────
+    # ── TIER 3: Pacific Islands ─────────────────────────
 
     {
         "domain"     : "www.pina.com.fj",

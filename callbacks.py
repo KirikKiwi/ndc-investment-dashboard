@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# callbacks.py — All interactivity
+# callbacks.py: All interactivity
 # ============================================================
 
 import sys, os
@@ -87,7 +87,7 @@ def update_analytics(region, group, country):
         parts.append(get_country_name(country))
 
     summary = (
-        f"Filtered to: {' · '.join(parts)} — {len(df)} "
+        f"Filtered to: {' · '.join(parts)}: {len(df)} "
         f"{'country' if len(df) == 1 else 'countries'}"
         if parts else ""
     )

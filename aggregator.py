@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# aggregator.py — RSS + scrape news aggregation engine
+# aggregator.py: RSS + scrape news aggregation engine
 # Sprint 3
 # ============================================================
 
@@ -49,7 +49,7 @@ REQUEST_HEADERS  = {
     "Sec-Fetch-User"           : "?1",
     "Upgrade-Insecure-Requests": "1",
 }
-MAX_ARTICLE_AGE  = 365   # days — prune older articles
+MAX_ARTICLE_AGE  = 365   # days: prune older articles
 MAX_PER_SOURCE   = 20    # articles per source per run
 
 
@@ -140,7 +140,7 @@ def _parse_date(date_str):
                 return dt.strftime("%Y-%m-%d")
             except (ValueError, IndexError):
                 continue
-        # Last resort — extract any YYYY-MM-DD pattern
+        # Last resort: extract any YYYY-MM-DD pattern
         import re
         match = re.search(r"(\d{4}-\d{2}-\d{2})", date_str)
         if match:
@@ -194,7 +194,7 @@ def fetch_rss(source):
             if not title or not link:
                 continue
 
-            # Summary — try several fields
+            # Summary: try several fields
             summary = ""
             if hasattr(entry, "summary"):
                 summary = entry.summary
@@ -214,7 +214,7 @@ def fetch_rss(source):
             )
             pub_date = _parse_date(date_raw)
 
-            # Image — check media, enclosures, content
+            # Image: check media, enclosures, content
             image_url = None
             if hasattr(entry, "media_thumbnail") and entry.media_thumbnail:
                 image_url = entry.media_thumbnail[0].get("url")
@@ -290,7 +290,7 @@ def fetch_scrape(source):
         # Strategy: find article-like containers, then extract
         # title (linked heading) and optional summary/date/image
 
-        # Candidate containers — try in order of specificity
+        # Candidate containers: try in order of specificity
         containers = (
             soup.find_all("article", limit=MAX_PER_SOURCE)
             or soup.find_all("div", class_=lambda c: c and any(
@@ -411,7 +411,7 @@ def fetch_scrape(source):
             if not title or len(title) < 10:
                 continue
 
-            # Summary — look for <p> or summary-like class
+            # Summary: look for <p> or summary-like class
             summary = ""
             p_tag = container.find("p")
             if p_tag:
@@ -426,7 +426,7 @@ def fetch_scrape(source):
                 if desc:
                     summary = desc.get_text(strip=True)[:300]
 
-            # Date — look for <time> or date-like class
+            # Date: look for <time> or date-like class
             pub_date = None
             time_tag = container.find("time")
             if time_tag:
@@ -779,7 +779,7 @@ def run_aggregator(sources=None):
         except Exception as e:
             sources_failed += 1
             _log_health(source, "error", 0, str(e))
-            logging.error(f"  {label}: ERROR — {e}")
+            logging.error(f"  {label}: ERROR: {e}")
             source_details.append({
                 "label"    : label,
                 "method"   : method,

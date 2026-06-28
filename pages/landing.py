@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# pages/landing.py — Introductory landing page
+# pages/landing.py: Introductory landing page
 # ============================================================
 
 import sys, os
@@ -171,7 +171,7 @@ def layout():
                 html.Div([
                     html.Span("◆ ", style={"color": C["emerald"]}),
                     html.Span(
-                        "NDC Climate Investment Intelligence",
+                        "Green-Gott's Vault · Climate Investment Intelligence",
                         style={
                             **T["label"],
                             "color"        : C["text_muted"],
@@ -201,7 +201,7 @@ def layout():
                 html.P(
                     "A structured research tool mapping NDC commitments, "
                     "sector-level investment signals and climate risk "
-                    "data across 198 countries — built for analysts, "
+                    "data across 198 countries, built for analysts, "
                     "researchers and policy professionals.",
                     style={
                         "fontSize"     : "15px",

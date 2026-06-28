@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# cse.py — Google Custom Search Engine integration
+# cse.py: Google Custom Search Engine integration
 # Sprint 3: News and subsidy data for country + sector panels
 # ============================================================
 

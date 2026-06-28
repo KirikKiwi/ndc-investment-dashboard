@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# classifier.py — Country and sector tagging for news articles
+# classifier.py: Country and sector tagging for news articles
 # Sprint 3
 # ============================================================
 
@@ -93,7 +93,7 @@ def _build_country_lookup():
 
 COUNTRY_LOOKUP = _build_country_lookup()
 
-# Short names that could cause false positives — require word boundaries
+# Short names that could cause false positives: require word boundaries
 SHORT_NAMES = {"US", "UK", "EU", "UAE", "DRC", "CAR"}
 
 

@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# export_feed.py — Export news feed to Excel
+# export_feed.py: Export news feed to Excel
 # Run weekly alongside aggregator to maintain local archive
 # Sprint 3
 # ============================================================

@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# oecd_rio.py — OECD Rio Markers climate finance data
+# oecd_rio.py: OECD Rio Markers climate finance data
 # Sprint 3: Investment Landscape section
 # ============================================================
 
@@ -288,7 +288,7 @@ def rio_stats():
 # ============================================================
 
 def run_fetch():
-    """Full fetch cycle — both markers."""
+    """Full fetch cycle: both markers."""
     logging.info("Fetching OECD Rio Markers...")
     total_stored = 0
 
@@ -300,7 +300,7 @@ def run_fetch():
             total_stored += stored
             logging.info(f"  {label}: {len(results)} records, {stored} stored")
         except Exception as e:
-            logging.error(f"  {label}: ERROR — {e}")
+            logging.error(f"  {label}: ERROR: {e}")
 
         time.sleep(1)
 

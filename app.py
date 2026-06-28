@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# app.py — Application entry point
+# app.py: Application entry point
 # ============================================================
 
 import sys, os
@@ -22,7 +22,7 @@ app = dash.Dash(
         "wght@300;400;500;600;700&display=swap"
     ],
     suppress_callback_exceptions = True,
-    title                        = "NDC Climate Intelligence",
+    title                        = "Green-Gott's Vault",
     update_title                 = None,
 )
 
@@ -39,7 +39,7 @@ def country_data_endpoint():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8050))
     print("\n" + "=" * 55)
-    print("  NDC CLIMATE INTELLIGENCE DASHBOARD")
+    print("  GREEN-GOTT'S VAULT")
     print("=" * 55)
     print(f"  Local:   http://127.0.0.1:{port}")
     print("=" * 55 + "\n")

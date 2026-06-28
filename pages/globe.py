@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# pages/globe.py — D3 globe + expanded country panel
+# pages/globe.py: D3 globe + expanded country panel
 # ============================================================
 
 import sys, os
@@ -543,7 +543,7 @@ def country_panel_content(iso_code):
     summary_raw = country_data.get("indc_summary", "")
     summary     = clean_ndc_text(str(summary_raw), max_length=400)
 
-    # EU member states submitted collectively — flag this
+    # EU member states submitted collectively: flag this
     EU_MEMBERS = {
         "AUT","BEL","BGR","HRV","CYP","CZE","DNK","EST","FIN",
         "FRA","DEU","GRC","HUN","IRL","ITA","LVA","LTU","LUX",

@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# wgi.py — World Bank Worldwide Governance Indicators
+# wgi.py: World Bank Worldwide Governance Indicators
 # Sprint 3: Governance layer for country panel and benchmark
 # ============================================================
 
@@ -20,7 +20,7 @@ DB_PATH = os.path.join(
     "data", "database", "ndc_dashboard.db"
 )
 
-# WGI indicators — .SC variants give 0-100 scores
+# WGI indicators: .SC variants give 0-100 scores
 WGI_CODES = {
     "GOV_WGI_PV.SC": "political_stability",
     "GOV_WGI_RL.SC": "rule_of_law",
@@ -249,7 +249,7 @@ def wgi_stats():
 # ============================================================
 
 def run_wgi_fetch():
-    """Full fetch cycle — pull all indicators, store in DB."""
+    """Full fetch cycle: pull all indicators, store in DB."""
     logging.info("Starting WGI fetch...")
     data = fetch_all_wgi()
     stored = store_wgi(data)

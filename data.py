@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# data.py — Database queries and data preparation
+# data.py: Database queries and data preparation
 # ============================================================
 
 import sqlite3
@@ -186,9 +186,9 @@ def prepare_map_data(master_df, tags_df):
     df = master_df.copy()
 
     tier_score = {
-        "Tier 1 — Established markets" : 3,
-        "Tier 2 — Emerging markets"    : 2,
-        "Tier 3 — Frontier markets"    : 1,
+        "Tier 1: Established markets" : 3,
+        "Tier 2: Emerging markets"    : 2,
+        "Tier 3: Frontier markets"    : 1,
         "Insufficient data"            : 0,
     }
     df["tier_score"] = df["investment_tier"].map(
@@ -302,15 +302,15 @@ def get_global_kpis(master_df, tags_df):
         ),
         "tier1_count"           : int(
             (master_df["investment_tier"] ==
-             "Tier 1 — Established markets").sum()
+             "Tier 1: Established markets").sum()
         ),
         "tier2_count"           : int(
             (master_df["investment_tier"] ==
-             "Tier 2 — Emerging markets").sum()
+             "Tier 2: Emerging markets").sum()
         ),
         "tier3_count"           : int(
             (master_df["investment_tier"] ==
-             "Tier 3 — Frontier markets").sum()
+             "Tier 3: Frontier markets").sum()
         ),
     }
 
@@ -532,7 +532,7 @@ GROUPS = {
     ],
 }
 
-# Reverse lookup — ISO to region
+# Reverse lookup: ISO to region
 ISO_TO_REGION = {}
 for region, isos in REGIONS.items():
     for iso in isos:
@@ -757,7 +757,7 @@ def get_country_projects_top3(iso_code, projects_df):
 
 # ============================================================
 # PRE-COMPUTED PROJECT ISO LOOKUP
-# Runs once at import — avoids pycountry on every click
+# Runs once at import: avoids pycountry on every click
 # ============================================================
 
 def _build_project_iso_cache(projects_df):
@@ -829,7 +829,7 @@ def compute_benchmark_scores(master_df):
       Renewable %           20%
       Vulnerability (inv.)  15%
       WB Project Count       5%
-      Conditional Uplift     5% (inverted — higher = more dependent)
+      Conditional Uplift     5% (inverted, higher = more dependent)
     Countries missing a metric receive the median for that metric.
     """
     df = master_df.copy()

@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# pages/analytics.py — Global analytics section
+# pages/analytics.py: Global analytics section
 # ============================================================
 
 import sys, os
@@ -212,7 +212,7 @@ def filter_bar():
 
 
 # ============================================================
-# SECTION 1 — PARIS ALIGNMENT
+# SECTION 1: PARIS ALIGNMENT
 # ============================================================
 
 def build_paris_alignment(df, tags):
@@ -356,7 +356,7 @@ def build_paris_alignment(df, tags):
 
 
 # ============================================================
-# SECTION 2 — ENERGY AND CLIMATE READINESS
+# SECTION 2: ENERGY AND CLIMATE READINESS
 # ============================================================
 
 def build_energy_readiness(df, single_country=False):
@@ -504,10 +504,10 @@ def build_energy_readiness(df, single_country=False):
             get_country_name
         )
         tier_colour_map = {
-            "Tier 1 — Established markets": C["tier1"],
-            "Tier 2 — Emerging markets"   : C["tier2"],
-            "Tier 3 — Frontier markets"   : C["tier3"],
-            "Insufficient data"            : C["tier_none"],
+            "Tier 1: Established markets": C["tier1"],
+            "Tier 2: Emerging markets"   : C["tier2"],
+            "Tier 3: Frontier markets"   : C["tier3"],
+            "Insufficient data"          : C["tier_none"],
         }
         fig_scatter = go.Figure()
         for tier, colour in tier_colour_map.items():
@@ -520,8 +520,8 @@ def build_energy_readiness(df, single_country=False):
                 x    = subset["readiness_score"],
                 y    = subset["vulnerability_score"],
                 mode = "markers",
-                name = (tier.split(" — ")[-1]
-                        if " — " in tier else tier),
+                name = (tier.split(": ", 1)[-1]
+                        if ": " in tier else tier),
                 marker = dict(
                     color   = colour,
                     size    = 7,
@@ -576,7 +576,7 @@ def build_energy_readiness(df, single_country=False):
 
 
 # ============================================================
-# SECTION 3 — FINANCE FLOWS
+# SECTION 3: FINANCE FLOWS
 # ============================================================
 
 def build_finance_flows(df, tags, single_country=False):
@@ -712,9 +712,9 @@ def build_finance_flows(df, tags, single_country=False):
     if len(r_list) >= 2:
         fig_tier = go.Figure()
         for tier, colour in [
-            ("Tier 1 — Established markets", C["tier1"]),
-            ("Tier 2 — Emerging markets",    C["tier2"]),
-            ("Tier 3 — Frontier markets",    C["tier3"]),
+            ("Tier 1: Established markets", C["tier1"]),
+            ("Tier 2: Emerging markets",    C["tier2"]),
+            ("Tier 3: Frontier markets",    C["tier3"]),
         ]:
             subset = tier_region_counts[
                 tier_region_counts["investment_tier"] == tier
@@ -726,7 +726,7 @@ def build_finance_flows(df, tags, single_country=False):
             ]
             if sum(counts) == 0:
                 continue
-            short = tier.split(" — ")[-1]
+            short = tier.split(": ", 1)[-1]
             fig_tier.add_trace(go.Bar(
                 name=short, x=r_list, y=counts,
                 marker_color=colour,
@@ -765,8 +765,8 @@ def build_finance_flows(df, tags, single_country=False):
         name   = get_country_name(row["iso_code"])
         uplift = float(row["conditional_pct_uplift"])
         tier   = str(row.get("investment_tier",""))
-        short  = (tier.split(" — ")[-1]
-                  if " — " in tier else "N/A")
+        short  = (tier.split(": ", 1)[-1]
+                  if ": " in tier else "N/A")
         bar_w  = min(int(uplift), 100)
         signal_rows.append(html.Div([
             html.Div(f"{i+1}", style={
@@ -857,7 +857,7 @@ def build_finance_flows(df, tags, single_country=False):
 
 
 # ============================================================
-# SECTION 4 — SECTOR INTELLIGENCE
+# SECTION 4: SECTOR INTELLIGENCE
 # ============================================================
 
 def build_sector_intelligence(df, tags):

@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# news_render.py — Dash components for news feed display
+# news_render.py: Dash components for news feed display
 # Sprint 3
 # ============================================================
 

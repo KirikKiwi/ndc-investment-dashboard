@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# pages/tier3.py — Sector deep-dive panel (Tier 3)
+# pages/tier3.py: Sector deep-dive panel (Tier 3)
 # ============================================================
 
 import sys, os
@@ -512,7 +512,7 @@ def tier3_content(iso_code, sector_name):
                          if pd.notna(r.get("readiness_score"))
                          else "N/A")
                 comp_rows.append(html.Div([
-                    html.Span("—", style={
+                    html.Span("▸", style={
                         "width": "20px", "fontSize": "11px",
                         "color": C["emerald"], "fontFamily": "Inter, sans-serif",
                         "flexShrink": "0",

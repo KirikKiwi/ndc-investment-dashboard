@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# components.py — Design system and reusable UI elements
+# components.py: Design system and reusable UI elements
 # ============================================================
 
 from dash import html
@@ -72,9 +72,9 @@ SECTOR_COLOURS = {
 }
 
 TIER_COLOURS = {
-    "Tier 1 — Established markets" : C["tier1"],
-    "Tier 2 — Emerging markets"    : C["tier2"],
-    "Tier 3 — Frontier markets"    : C["tier3"],
+    "Tier 1: Established markets" : C["tier1"],
+    "Tier 2: Emerging markets"    : C["tier2"],
+    "Tier 3: Frontier markets"    : C["tier3"],
     "Insufficient data"            : C["tier_none"],
 }
 
@@ -214,7 +214,7 @@ def sector_pill(sector_name):
 def tier_badge(tier):
     """Investment tier badge."""
     colour = TIER_COLOURS.get(tier, C["tier_none"])
-    label  = tier.split(" — ")[1] if " — " in tier else tier
+    label  = tier.split(": ", 1)[1] if ": " in tier else tier
     return html.Span(label, style={
         "backgroundColor" : colour + "18",
         "color"           : colour,

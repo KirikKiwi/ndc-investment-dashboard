@@ -1,6 +1,6 @@
 # ============================================================
 # NDC Investment Dashboard
-# layout.py — Page routing and app layout assembly
+# layout.py: Page routing and app layout assembly
 # ============================================================
 
 import sys, os
@@ -25,7 +25,7 @@ def navbar():
                     "color"    : C["emerald"],
                     "fontSize" : "16px"
                 }),
-                html.Span("NDC Intelligence", style={
+                html.Span("Green-Gott's Vault", style={
                     "fontSize"   : "14px",
                     "fontWeight" : "600",
                     "color"      : C["text"],
@@ -109,7 +109,7 @@ def create_layout():
         # Navbar
         navbar(),
 
-        # Page content — rendered by callback
+        # Page content: rendered by callback
         html.Div(id="page-content"),
 
     ], style={
