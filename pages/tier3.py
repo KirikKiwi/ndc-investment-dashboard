@@ -177,17 +177,19 @@ def tier3_content(iso_code, sector_name):
                     "fontFamily" : "Inter, sans-serif",
                 }),
             ]),
-            html.Div("× Close", id="close-tier3-btn", style={
-                "fontSize"        : "12px",
+            html.Div("✕  Close", id="close-tier3-btn", style={
+                "fontSize"        : "13px",
                 "color"           : "#ffffff",
                 "cursor"          : "pointer",
                 "lineHeight"      : "1",
                 "userSelect"      : "none",
-                "padding"         : "6px 14px",
+                "padding"         : "8px 18px",
                 "backgroundColor" : "#c0392b",
                 "borderRadius"    : "4px",
                 "fontWeight"      : "700",
                 "fontFamily"      : "Inter, sans-serif",
+                "letterSpacing"   : "0.5px",
+                "boxShadow"       : "0 2px 8px rgba(192,57,43,0.4)",
             })
         ], style={
             "display"         : "flex",

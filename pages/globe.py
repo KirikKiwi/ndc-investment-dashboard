@@ -636,7 +636,7 @@ def country_panel_content(iso_code):
                         "fontWeight"    : "600",
                         "textTransform" : "uppercase",
                         "letterSpacing" : "1.5px",
-                        "color"         : C["text_muted"],
+                        "color"         : C["emerald"],
                         "fontFamily"    : "Inter, sans-serif",
                     }),
                 ]),
@@ -653,7 +653,7 @@ def country_panel_content(iso_code):
                 "marginBottom"   : "12px",
             }),
             html.Div(sector_rows)
-        ], style={"marginBottom": "16px"})
+        ], className="investment-signals-section")
     else:
         signals_section = html.Div()
 

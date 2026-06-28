@@ -199,10 +199,14 @@ def layout():
 
                 # Subheadline
                 html.P(
-                    "A structured research tool mapping NDC commitments, "
-                    "sector-level investment signals and climate risk "
-                    "data across 198 countries, built for analysts, "
-                    "researchers and policy professionals.",
+                    "Every country has committed to a climate plan. "
+                    "Most of those plans contain investment signals "
+                    "buried in policy language. Green-Gott's Vault "
+                    "unlocks them: 198 country profiles, 7 investment "
+                    "sectors, conditional finance signals, governance "
+                    "scores and live policy intelligence — all in one "
+                    "place. Built for analysts who need more than a "
+                    "spreadsheet.",
                     style={
                         "fontSize"     : "15px",
                         "color"        : C["text_secondary"],
@@ -747,6 +751,96 @@ for n, step in [
             "backgroundColor" : C["surface"],
             "borderTop"       : f"1px solid {C['border']}",
             "padding"         : "100px 80px",
+        }),
+
+        # ── FOOTER ───────────────────────────────────────────
+        html.Div([
+            html.Div([
+
+                # Data sources row
+                html.Div([
+                    html.Span("Data sources: ", style={
+                        "fontSize"   : "11px",
+                        "color"      : C["text_muted"],
+                        "fontFamily" : "Inter, sans-serif",
+                        "fontWeight" : "600",
+                    }),
+                    *[
+                        html.A(name, href=url, target="_blank", style={
+                            "fontSize"       : "11px",
+                            "color"          : C["text_muted"],
+                            "fontFamily"     : "Inter, sans-serif",
+                            "textDecoration" : "none",
+                            "marginRight"    : "12px",
+                        })
+                        for name, url in [
+                            ("Climate Watch", "https://www.climatewatchdata.org"),
+                            ("World Bank",    "https://data.worldbank.org"),
+                            ("ND-GAIN",       "https://gain.nd.edu"),
+                            ("OWID",          "https://ourworldindata.org"),
+                            ("OECD",          "https://stats.oecd.org"),
+                            ("UNFCCC",        "https://unfccc.int"),
+                        ]
+                    ]
+                ], style={
+                    "marginBottom" : "12px",
+                    "display"      : "flex",
+                    "flexWrap"     : "wrap",
+                    "gap"          : "0",
+                }),
+
+                # Divider
+                html.Hr(style={
+                    "border"        : "none",
+                    "borderTop"     : f"1px solid {C['border']}",
+                    "margin"        : "12px 0",
+                }),
+
+                # Creator and GitHub row
+                html.Div([
+                    html.Span("Built by ", style={
+                        "fontSize"   : "11px",
+                        "color"      : C["text_muted"],
+                        "fontFamily" : "Inter, sans-serif",
+                    }),
+                    html.A("Pranav R Girimaji", href="https://www.linkedin.com/in/prg99",
+                           target="_blank", style={
+                        "fontSize"       : "11px",
+                        "color"          : C["emerald"],
+                        "fontFamily"     : "Inter, sans-serif",
+                        "textDecoration" : "none",
+                        "fontWeight"     : "500",
+                    }),
+                    html.Span("  ·  ", style={
+                        "fontSize"  : "11px",
+                        "color"     : C["border"],
+                        "fontFamily": "Inter, sans-serif",
+                    }),
+                    html.A("GitHub", href="https://github.com/KirikKiwi/ndc-investment-dashboard",
+                           target="_blank", style={
+                        "fontSize"       : "11px",
+                        "color"          : C["text_muted"],
+                        "fontFamily"     : "Inter, sans-serif",
+                        "textDecoration" : "none",
+                    }),
+                    html.Span("  ·  ", style={
+                        "fontSize"  : "11px",
+                        "color"     : C["border"],
+                        "fontFamily": "Inter, sans-serif",
+                    }),
+                    html.Span("Green-Gott's Vault · Beta 2.0", style={
+                        "fontSize"   : "11px",
+                        "color"      : C["text_muted"],
+                        "fontFamily" : "Inter, sans-serif",
+                    }),
+                ], style={"display": "flex", "alignItems": "center",
+                          "flexWrap": "wrap", "gap": "0"}),
+
+            ], style={"maxWidth": "960px"}),
+        ], style={
+            "backgroundColor" : C["surface"],
+            "borderTop"       : f"1px solid {C['border']}",
+            "padding"         : "32px 80px",
         }),
 
     ], style={

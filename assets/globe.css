@@ -89,9 +89,11 @@
     top: 52px;
     left: 0;
     right: 0;
-    z-index: 50;
+    width: 100%;
+    z-index: 150;
     background-color: #111111;
     border-bottom: 1px solid #2a2a2a;
+    backdrop-filter: blur(8px);
 }
 
 /* Controls bar */
@@ -271,6 +273,26 @@ body.tier3-open {
 
 .sector-pill-row:hover::after {
     opacity: 1;
+}
+
+/* Tier 3 close button */
+#close-tier3-btn {
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+#close-tier3-btn:hover {
+    background-color: #e74c3c !important;
+    transform: scale(1.04);
+}
+
+/* Investment Signals section emphasis */
+.investment-signals-section {
+    background-color: rgba(0, 200, 150, 0.04);
+    border: 1px solid rgba(0, 200, 150, 0.15);
+    border-left: 3px solid #00c896;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
 }
 
 /* ── Info tooltip ─────────────────────────── */
