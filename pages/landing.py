@@ -761,12 +761,12 @@ for n, step in [
 
                 # Creator and social row
                 html.Div([
-                    html.Span("Built by Pranav", style={
+                    html.Span("Built by Pranav R Girimaji", style={
                         "fontSize"   : "11px",
                         "color"      : C["text_muted"],
                         "fontFamily" : "Inter, sans-serif",
                     }),
-                    html.A("in", href="https://www.linkedin.com/in/pranavmehrotra/",
+                    html.A("in", href="https://www.linkedin.com/in/prg99",
                            target="_blank", style={
                         "fontSize"        : "10px",
                         "color"           : C["emerald"],

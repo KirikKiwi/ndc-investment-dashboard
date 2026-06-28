@@ -22,9 +22,11 @@ def navbar():
 
             # Logo
             html.A([
-                html.Span("👺 ", style={
-                    "color"    : C["emerald"],
-                    "fontSize" : "16px"
+                html.Img(src="/assets/goblin.webp", style={
+                    "height"        : "22px",
+                    "width"         : "auto",
+                    "marginRight"   : "6px",
+                    "verticalAlign" : "middle",
                 }),
                 html.Span("Green-Gott's Vault", style={
                     "fontSize"   : "14px",
