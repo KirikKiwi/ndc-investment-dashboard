@@ -621,12 +621,62 @@ def fetch_playwright(source):
 # STORAGE
 # ============================================================
 
+# ============================================================
+# RELEVANCE FILTER
+# Prevents off-topic articles from entering the database.
+# Applied at ingestion time, before storage.
+# ============================================================
+
+RELEVANCE_KEYWORDS = [
+    # Climate
+    "climate", "emission", "carbon", "greenhouse", "ghg",
+    "paris agreement", "ndc", "net zero", "net-zero",
+    "decarboni", "warming", "cop2", "cop3",
+    "adaptation", "mitigation",
+    # Energy
+    "energy", "power", "solar", "wind", "renewable",
+    "hydropower", "geothermal", "hydrogen", "battery",
+    "grid", "electricity", "fossil", "coal", "gas",
+    "nuclear", "turbine", "photovoltaic", "clean energy",
+    # Finance and investment
+    "invest", "financ", "fund", "capital", "bond",
+    "green bond", "blended", "concessional", "subsidy",
+    "incentive", "grant", "loan", "equity", "guarantee",
+    "project finance", "infrastructure", "development bank",
+    "multilateral", "bilateral", "oda", "aid",
+    # Policy
+    "policy", "regulation", "legislation", "tariff",
+    "tax credit", "carbon price", "carbon tax", "ets",
+    "trading scheme", "framework",
+    # Sectors
+    "transport", "agriculture", "forestry", "deforestation",
+    "water supply", "sanitation", "waste management",
+    "circular economy", "biodiversity", "conservation",
+    "industrial", "manufacturing", "construction",
+    "resilience", "disaster risk", "flood", "drought",
+]
+
+def _is_relevant_article(title, summary=""):
+    """Returns True if article is about climate/energy/finance."""
+    text = (title + " " + (summary or "")).lower()
+    return any(kw in text for kw in RELEVANCE_KEYWORDS)
+
+
 def store_articles(articles):
     """
     Writes articles to the news_feed table.
     Skips duplicates by URL (via article_id).
     Returns count of newly inserted articles.
     """
+    if not articles:
+        return 0
+
+    # Filter out irrelevant articles before storing
+    articles = [
+        a for a in articles
+        if _is_relevant_article(a.get("title", ""), a.get("summary", ""))
+    ]
+
     if not articles:
         return 0
 
@@ -815,7 +865,8 @@ def run_aggregator(sources=None):
 # ============================================================
 
 def get_articles_for_country(iso_code, limit=5):
-    """Returns top articles tagged with a country ISO code."""
+    """Returns top articles tagged with a country ISO code.
+    Falls back to GLOBAL articles if country has fewer than limit results."""
     try:
         conn = sqlite3.connect(DB_PATH)
         rows = conn.execute("""
@@ -824,23 +875,54 @@ def get_articles_for_country(iso_code, limit=5):
                    credibility_score
             FROM news_feed
             WHERE countries LIKE ?
+            AND countries != 'GLOBAL'
             ORDER BY credibility_score DESC, published_date DESC
             LIMIT ?
         """, (f"%{iso_code}%", limit)).fetchall()
-        conn.close()
-        return [
+
+        results = [
             {
-                "title"       : r[0],
-                "summary"     : r[1],
-                "url"         : r[2],
-                "image_url"   : r[3],
-                "source"      : r[4],
-                "tier"        : r[5],
-                "date"        : r[6],
-                "score"       : r[7],
+                "title"      : r[0],
+                "summary"    : r[1],
+                "url"        : r[2],
+                "image_url"  : r[3],
+                "source"     : r[4],
+                "tier"       : r[5],
+                "date"       : r[6],
+                "score"      : r[7],
+                "match_type" : "country",
             }
             for r in rows
         ]
+
+        if len(results) < limit:
+            remaining = limit - len(results)
+            global_rows = conn.execute("""
+                SELECT title, summary, url, image_url,
+                       source_label, source_tier, published_date,
+                       credibility_score
+                FROM news_feed
+                WHERE countries = 'GLOBAL'
+                ORDER BY credibility_score DESC, published_date DESC
+                LIMIT ?
+            """, (remaining,)).fetchall()
+            results.extend([
+                {
+                    "title"      : r[0],
+                    "summary"    : r[1],
+                    "url"        : r[2],
+                    "image_url"  : r[3],
+                    "source"     : r[4],
+                    "tier"       : r[5],
+                    "date"       : r[6],
+                    "score"      : r[7],
+                    "match_type" : "global",
+                }
+                for r in global_rows
+            ])
+
+        conn.close()
+        return results
     except Exception:
         return []
 

@@ -67,7 +67,7 @@ SOURCES = [
         "label"      : "The Guardian",
         "tier"       : 1,
         "method"     : "rss",
-        "feed_url"   : "https://www.theguardian.com/environment/rss",
+        "feed_url"   : "https://www.theguardian.com/environment/climate-crisis/rss",
         "category"   : "news",
     },
 
@@ -301,7 +301,7 @@ SOURCES = [
         "label"      : "ReliefWeb",
         "tier"       : 2,
         "method"     : "rss",
-        "feed_url"   : "https://reliefweb.int/updates/rss.xml",
+        "feed_url"   : "https://reliefweb.int/updates/rss.xml?search=climate%20OR%20energy%20OR%20renewable",
         "category"   : "news",
     },
     {

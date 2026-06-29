@@ -76,6 +76,15 @@ def article_card(article):
         }),
         _tier_badge(tier),
     ]
+    if article.get("match_type") == "global":
+        meta_parts.append(
+            html.Span("  ·  Global", style={
+                "fontSize"   : "10px",
+                "color"      : C["amber"],
+                "fontFamily" : "Inter, sans-serif",
+                "fontStyle"  : "italic",
+            })
+        )
     if date:
         meta_parts.append(
             html.Span(f"  ·  {date}", style={

@@ -565,7 +565,7 @@
     function waitForContainer(attempts) {
         if (_globeInitialised) return;
         const container = document.getElementById("globe-container");
-        if (container && container.offsetParent !== null) {
+        if (container && container.clientWidth > 0) {
             _globeInitialised = true;
             loadDataAndInit();
             return;
