@@ -284,6 +284,133 @@ def rio_stats():
 
 
 # ============================================================
+# TOP DONORS PER COUNTRY
+# ============================================================
+
+MAJOR_DONORS = "USA+GBR+DEU+FRA+JPN+NOR+SWE+DNK+NLD+CAN+CHE+AUS+ITA+ESP+KOR+FIN+BEL+AUT+IRL+NZL"
+
+def _ensure_donor_table():
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS oecd_donors (
+            iso_code    TEXT NOT NULL,
+            donor_code  TEXT NOT NULL,
+            donor_name  TEXT,
+            total_usd   REAL,
+            fetched_at  REAL,
+            PRIMARY KEY (iso_code, donor_code)
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+_ensure_donor_table()
+
+
+def fetch_top_donors(iso_code):
+    """
+    Fetches top bilateral climate donors for a country.
+    Returns list of (donor_name, total_usd) sorted by amount.
+    """
+    import pycountry
+    # Convert ISO3 to OECD recipient code (same as ISO3 for most)
+    iso3 = iso_code.upper()
+
+    # Check cache first
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cached = conn.execute(
+            "SELECT donor_name, total_usd FROM oecd_donors "
+            "WHERE iso_code = ? AND fetched_at > ? ORDER BY total_usd DESC",
+            (iso3, time.time() - 604800)  # 7 day cache
+        ).fetchall()
+        conn.close()
+        if cached:
+            return [{"name": r[0], "amount": r[1]} for r in cached if r[1] > 0]
+    except Exception:
+        pass
+
+    # Fetch from API
+    url = (
+        API_BASE + "/"
+        + MAJOR_DONORS + "." + iso3 + ".1000..2.20+30.1+2..Q._T.."
+        + "?startPeriod=2022&dimensionAtObservation=AllDimensions"
+    )
+
+    try:
+        req = Request(url, headers={
+            "User-Agent": "NDC-Dashboard/1.0",
+            "Accept": "application/vnd.sdmx.data+json"
+        })
+        with urlopen(req, timeout=API_TIMEOUT) as resp:
+            data = json.loads(resp.read())
+
+        structure = data.get("data", {}).get("structures", [])
+        datasets = data.get("data", {}).get("dataSets", [])
+
+        if not structure or not datasets:
+            return []
+
+        dims = structure[0].get("dimensions", {}).get("observation", [])
+        donor_dim = None
+        for i, d in enumerate(dims):
+            if d["id"] == "DONOR":
+                donor_dim = i
+                donor_values = d["values"]
+                break
+
+        if donor_dim is None:
+            return []
+
+        obs = datasets[0].get("observations", {})
+        donor_totals = {}
+
+        for key, val in obs.items():
+            indices = [int(x) for x in key.split(":")]
+            amount = val[0] if val else 0
+            if amount and amount > 0:
+                dv = donor_values[indices[donor_dim]]
+                donor_id = dv["id"]
+                donor_name = dv["name"]
+                # Skip aggregate entries
+                if donor_id in ("DAC", "ALLD", "DAC_EC", "DACEU",
+                                "DACEU_EC", "EU00", "G7", "ALLM"):
+                    continue
+                if donor_name not in donor_totals:
+                    donor_totals[donor_name] = {"code": donor_id, "amount": 0}
+                donor_totals[donor_name]["amount"] += amount
+
+        # Store in cache
+        conn = sqlite3.connect(DB_PATH)
+        for name, info in donor_totals.items():
+            conn.execute(
+                "INSERT OR REPLACE INTO oecd_donors "
+                "(iso_code, donor_code, donor_name, total_usd, fetched_at) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (iso3, info["code"], name, info["amount"], time.time())
+            )
+        conn.commit()
+        conn.close()
+
+        results = [
+            {"name": name, "amount": info["amount"]}
+            for name, info in donor_totals.items()
+            if info["amount"] > 0
+        ]
+        return sorted(results, key=lambda x: -x["amount"])
+
+    except Exception as e:
+        logging.warning("Donor fetch failed for " + iso3 + ": " + str(e))
+        return []
+
+
+def get_top_donors(iso_code, limit=5):
+    """Returns top climate donors for a country, cached."""
+    donors = fetch_top_donors(iso_code)
+    return donors[:limit]
+
+
+# ============================================================
 # MAIN
 # ============================================================
 

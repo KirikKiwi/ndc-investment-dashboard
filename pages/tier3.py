@@ -18,7 +18,7 @@ from data import (load_master, load_tags, load_projects,
                   get_benchmark_score)
 from aggregator import get_articles_for_sector
 from news_render import render_news_feed
-from oecd_rio import get_climate_finance
+from oecd_rio import get_climate_finance, get_top_donors
 
 master_df   = load_master()
 tags_df     = load_tags()
@@ -500,10 +500,65 @@ def tier3_content(iso_code, sector_name):
             "No OECD Rio Markers data available for this country."
         )
 
-    investor_block = _placeholder_block(
-        "Active Investors",
-        "Institutional investor and fund manager tracking planned for future release."
-    )
+    # Active investors from OECD bilateral donor data
+    top_donors = get_top_donors(iso_code, limit=5)
+    if top_donors:
+        def _fmt_donor(v):
+            if v >= 1000: return "$" + str(round(v/1000, 1)) + "B"
+            if v >= 1: return "$" + str(round(v)) + "M"
+            return "$" + str(round(v*1000)) + "K"
+
+        donor_rows = []
+        max_amount = top_donors[0]["amount"] if top_donors else 1
+        for d in top_donors:
+            bar_w = int(d["amount"] / max_amount * 100)
+            donor_rows.append(html.Div([
+                html.Div([
+                    html.Span(d["name"], style={
+                        "fontSize": "11px", "color": C["text"],
+                        "fontFamily": "Inter, sans-serif", "flex": "1",
+                    }),
+                    html.Span(_fmt_donor(d["amount"]), style={
+                        "fontSize": "11px", "color": C["emerald"],
+                        "fontFamily": "Inter, sans-serif", "fontWeight": "600",
+                    }),
+                ], style={"display": "flex", "justifyContent": "space-between",
+                          "marginBottom": "3px"}),
+                html.Div(html.Div(style={
+                    "width": str(bar_w) + "%", "backgroundColor": C["emerald"] + "40",
+                    "height": "3px", "borderRadius": "2px", "minWidth": "4px",
+                }), style={
+                    "backgroundColor": C["surface"], "height": "3px",
+                    "borderRadius": "2px",
+                }),
+            ], style={"marginBottom": "8px"}))
+
+        investor_block = html.Div([
+            html.Div("Top Bilateral Climate Donors", style={
+                "fontSize": "11px", "fontWeight": "600",
+                "color": C["text_muted"], "fontFamily": "Inter, sans-serif",
+                "marginBottom": "10px",
+            }),
+            html.Div(donor_rows),
+            html.Div(
+                "OECD bilateral ODA commitments for climate mitigation and adaptation (2022 onwards)",
+                style={
+                    "fontSize": "10px", "color": C["text_muted"],
+                    "fontFamily": "Inter, sans-serif", "fontStyle": "italic",
+                    "marginTop": "6px",
+                }
+            ),
+        ], style={
+            "padding": "10px 12px",
+            "backgroundColor": C["bg"],
+            "border": "1px solid " + C["border"],
+            "borderRadius": "4px",
+        })
+    else:
+        investor_block = _placeholder_block(
+            "Bilateral Climate Donors",
+            "No bilateral donor data available for this country."
+        )
 
     investment_section = html.Div([
         html.Div("Investment Landscape", style={
