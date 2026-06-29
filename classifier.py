@@ -262,18 +262,20 @@ CLIMATE_KEYWORDS = [
     "climate", "emission", "carbon", "greenhouse", "GHG",
     "paris agreement", "NDC", "net zero", "net-zero",
     "decarboni", "warming", "adaptation", "mitigation",
-    "resilience", "COP2", "COP3",
+    "resilience", "COP2", "COP3", "global warming",
     # Energy and infrastructure
     "energy", "power", "solar", "wind", "renewable",
     "hydropower", "geothermal", "hydrogen", "battery",
     "grid", "electricity", "fossil", "coal", "gas",
-    "nuclear", "turbine", "photovoltaic",
+    "nuclear", "turbine", "photovoltaic", "clean energy",
     # Finance and investment
     "invest", "financ", "fund", "capital", "bond",
     "green bond", "blended", "concessional", "subsidy",
     "incentive", "grant", "loan", "equity", "guarantee",
     "project finance", "infrastructure",
     "bankab", "creditworth",
+    "development bank", "multilateral", "bilateral",
+    "oda", "aid",
     # Policy
     "policy", "regulation", "legislation", "framework",
     "tariff", "tax credit", "carbon price", "carbon tax",
@@ -283,6 +285,11 @@ CLIMATE_KEYWORDS = [
     "water", "waste", "circular economy", "biodiversity",
     "conservation", "ecosystem", "industrial",
     "construction", "building",
+    # Disaster and adaptation
+    "flood", "drought", "disaster", "disaster risk",
+    "sea level", "cyclone", "hurricane", "typhoon",
+    "heatwave", "heat wave", "wildfire",
+    "food security", "water scarcity",
 ]
 
 def _is_climate_relevant(text):
