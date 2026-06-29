@@ -322,9 +322,8 @@ def build_paris_alignment(df, tags):
             ], style={"textAlign": "center", "flex": "1"}),
         ], style={"display": "flex", "gap": "16px"}),
         html.Div(
-            "Source: OECD Climate Finance (2021 data). "
-            "Updated figures available via OECD Climate Finance API "
-            "when access is confirmed.",
+            "Source: OECD Climate Finance Report (2021). "
+            "Ratification and implementation tracking to be integrated.",
             style={
                 "fontSize" : "11px", "color": C["text_muted"],
                 "fontFamily": "Inter, sans-serif",

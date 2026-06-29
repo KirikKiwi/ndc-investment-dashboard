@@ -502,8 +502,7 @@ def tier3_content(iso_code, sector_name):
 
     investor_block = _placeholder_block(
         "Active Investors",
-        "Investor tracking integration planned. DFI and private fund "
-        "data will be added when an appropriate data source is confirmed."
+        "Institutional investor and fund manager tracking planned for future release."
     )
 
     investment_section = html.Div([
