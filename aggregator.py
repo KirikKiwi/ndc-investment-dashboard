@@ -343,7 +343,7 @@ def fetch_scrape(source):
                 if link in seen_urls:
                     continue
                 # Must match a news-like URL pattern
-                news_pats = ["/sustainability/", "/news-and-events/",
+                news_pats = ["/sustainability/", "/news-and-events/", "/press-release/",
                             "/news-events/", "/stories/", "/story/",
                             "/press-release", "/article/", "/blog/",
                             "/update/", "/feature/", "/content/",

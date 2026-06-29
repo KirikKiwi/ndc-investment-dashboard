@@ -472,6 +472,68 @@ SOURCES = [
         "scrape_url" : "https://www.pina.com.fj/",
         "category"   : "news",
     },
+
+    # ── ADDITIONAL SOURCES — Regional Coverage Expansion ─
+
+    # Latin America & Caribbean (24 uncovered)
+    
+    
+
+    # Sub-Saharan Africa (23 uncovered)
+    
+    
+
+    # East Asia Pacific (18 uncovered — mostly Pacific islands)
+    
+    
+
+    # Western Europe (17 uncovered)
+    
+
+    # Central Asia (4 uncovered)
+    
+
+    # Eastern Europe (14 uncovered)
+    {
+        "domain"     : "emerging-europe.com",
+        "label"      : "Emerging Europe",
+        "tier"       : 3,
+        "method"     : "scrape",
+        "scrape_url" : "https://emerging-europe.com/tag/energy/",
+        "category"   : "news",
+    },
+
+    # Global — high volume climate specific
+    
+    
+    {
+        "domain"     : "climatepolicyinitiative.org",
+        "label"      : "Climate Policy Initiative",
+        "tier"       : 2,
+        "method"     : "scrape",
+        "scrape_url" : "https://www.climatepolicyinitiative.org/press-releases/",
+        "category"   : "policy",
+    },
+    # ── Regional expansion — working sources ─────────────
+
+    {
+        "domain"     : "www.esgtoday.com",
+        "label"      : "ESG Today",
+        "tier"       : 2,
+        "method"     : "rss",
+        "feed_url"   : "https://www.esgtoday.com/feed/",
+        "category"   : "news",
+    },
+    {
+        "domain"     : "news.mongabay.com",
+        "label"      : "Mongabay",
+        "tier"       : 3,
+        "method"     : "rss",
+        "feed_url"   : "https://news.mongabay.com/feed/",
+        "category"   : "news",
+    },
+
+
 ]
 
 

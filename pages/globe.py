@@ -865,7 +865,7 @@ def country_panel_content(iso_code):
     mdb_tooltip = (
         f"World Bank data covers 88 of 199 countries. "
         f"Primary regional MDB for {full_name} is the {mdb_name}. "
-        f"Additional regional MDB coverage is planned."
+        f"Project data sourced from World Bank climate portfolio."
     )
 
     if not top3.empty:
@@ -961,7 +961,7 @@ def country_panel_content(iso_code):
             note = (
                 f"No World Bank projects captured for {full_name}. "
                 f"Primary regional MDB: {mdb_name}. "
-                f"Additional regional MDB coverage is planned."
+                f"Project data sourced from World Bank climate portfolio."
             )
 
         projects_content = html.Div(note, style={
