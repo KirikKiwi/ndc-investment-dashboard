@@ -10,8 +10,7 @@ import json
 import re
 
 DB_PATH = os.path.join(
-    os.path.expanduser("~"),
-    "Documents", "ndc_dashboard",
+    os.path.dirname(os.path.abspath(__file__)),
     "data", "database", "ndc_dashboard.db"
 )
 
